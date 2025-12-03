@@ -1,3 +1,7 @@
+
+
+
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -72,6 +76,12 @@
       background-color: #fff;
       outline: none;
       transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+    }
+    /* 專門調整日期欄位高度，讓它不會太高 */
+    .date-input {
+      padding: 8px 10px;
+      height: 40px;
+      line-height: 24px;
     }
     input[type="number"]:focus,
     input[type="text"]:focus,
@@ -153,7 +163,7 @@
     <div class="section">
       <h2>基本資訊</h2>
       <label>日期：
-        <input type="date" id="date">
+        <input type="date" id="date" class="date-input">
       </label>
       <label>店名：
         <input type="text" id="store" placeholder="例：站前">
@@ -170,13 +180,13 @@
     <div class="section">
       <h2>1. 今日外撥</h2>
       <label>總外撥通數：
-        <input type="number" id="todayCallTotal" class="readonly" readonly>
+        <input type="number" id="todayCallTotal" class="readonly" inputmode="numeric" readonly>
       </label>
       <label>潛客通數：
-        <input type="number" id="todayCallPotential" oninput="recalcTotals()">
+        <input type="number" id="todayCallPotential" inputmode="numeric" oninput="recalcTotals()">
       </label>
       <label>3年以上舊客通數：
-        <input type="number" id="todayCallOld3Y" oninput="recalcTotals()">
+        <input type="number" id="todayCallOld3Y" inputmode="numeric" oninput="recalcTotals()">
       </label>
     </div>
 
@@ -184,16 +194,16 @@
     <div class="section">
       <h2>2. 今日預約（只計新客 + 潛客 + 3年以上舊客）</h2>
       <label>今日預約總數：
-        <input type="number" id="todayBookingTotal" class="readonly" readonly>
+        <input type="number" id="todayBookingTotal" class="readonly" inputmode="numeric" readonly>
       </label>
       <label>新客預約：
-        <input type="number" id="todayBookingNew" oninput="recalcTotals()">
+        <input type="number" id="todayBookingNew" inputmode="numeric" oninput="recalcTotals()">
       </label>
       <label>潛客預約：
-        <input type="number" id="todayBookingPotential" oninput="recalcTotals()">
+        <input type="number" id="todayBookingPotential" inputmode="numeric" oninput="recalcTotals()">
       </label>
       <label>3年以上舊客預約：
-        <input type="number" id="todayBookingOld3Y" oninput="recalcTotals()">
+        <input type="number" id="todayBookingOld3Y" inputmode="numeric" oninput="recalcTotals()">
       </label>
     </div>
 
@@ -201,29 +211,29 @@
     <div class="section">
       <h2>3. 今日到店（只計新客 + 潛客 + 3年以上舊客） & 試用 / 成交</h2>
       <label>今日到店總數：
-        <input type="number" id="todayVisitTotal" class="readonly" readonly>
+        <input type="number" id="todayVisitTotal" class="readonly" inputmode="numeric" readonly>
       </label>
       <label>新客到店：
-        <input type="number" id="todayVisitNew" oninput="recalcTotals()">
+        <input type="number" id="todayVisitNew" inputmode="numeric" oninput="recalcTotals()">
       </label>
       <label>潛客到店：
-        <input type="number" id="todayVisitPotential" oninput="recalcTotals()">
+        <input type="number" id="todayVisitPotential" inputmode="numeric" oninput="recalcTotals()">
       </label>
       <label>3年以上舊客到店：
-        <input type="number" id="todayVisitOld3Y" oninput="recalcTotals()">
+        <input type="number" id="todayVisitOld3Y" inputmode="numeric" oninput="recalcTotals()">
       </label>
 
       <label>試用 HA：
-        <input type="number" id="trialHA">
+        <input type="number" id="trialHA" inputmode="numeric">
       </label>
       <label>試用 APAP：
-        <input type="number" id="trialAPAP">
+        <input type="number" id="trialAPAP" inputmode="numeric">
       </label>
       <label>成交 HA：
-        <input type="number" id="dealHA">
+        <input type="number" id="dealHA" inputmode="numeric">
       </label>
       <label>成交 APAP：
-        <input type="number" id="dealAPAP">
+        <input type="number" id="dealAPAP" inputmode="numeric">
       </label>
     </div>
 
@@ -231,16 +241,16 @@
     <div class="section">
       <h2>4. 明日預約（只計新客 + 潛客 + 3年以上舊客）</h2>
       <label>明日預約總數：
-        <input type="number" id="tomorrowBookingTotal" class="readonly" readonly>
+        <input type="number" id="tomorrowBookingTotal" class="readonly" inputmode="numeric" readonly>
       </label>
       <label>新客預約：
-        <input type="number" id="tomorrowBookingNew" oninput="recalcTotals()">
+        <input type="number" id="tomorrowBookingNew" inputmode="numeric" oninput="recalcTotals()">
       </label>
       <label>潛客預約：
-        <input type="number" id="tomorrowBookingPotential" oninput="recalcTotals()">
+        <input type="number" id="tomorrowBookingPotential" inputmode="numeric" oninput="recalcTotals()">
       </label>
       <label>3年以上舊客預約：
-        <input type="number" id="tomorrowBookingOld3Y" oninput="recalcTotals()">
+        <input type="number" id="tomorrowBookingOld3Y" inputmode="numeric" oninput="recalcTotals()">
       </label>
     </div>
 
@@ -248,16 +258,16 @@
     <div class="section">
       <h2>5. 明日 KPI</h2>
       <label>明日外撥KPI（總通數）：
-        <input type="number" id="tomorrowKpiCallTotal" class="readonly" readonly>
+        <input type="number" id="tomorrowKpiCallTotal" class="readonly" inputmode="numeric" readonly>
       </label>
       <label>潛客外撥：
-        <input type="number" id="tomorrowKpiCallPotential" oninput="recalcTotals()">
+        <input type="number" id="tomorrowKpiCallPotential" inputmode="numeric" oninput="recalcTotals()">
       </label>
       <label>3年以上舊客外撥：
-        <input type="number" id="tomorrowKpiCallOld3Y" oninput="recalcTotals()">
+        <input type="number" id="tomorrowKpiCallOld3Y" inputmode="numeric" oninput="recalcTotals()">
       </label>
       <label>預約試用目標人數：
-        <input type="number" id="tomorrowKpiTrial">
+        <input type="number" id="tomorrowKpiTrial" inputmode="numeric">
       </label>
     </div>
 
@@ -399,5 +409,3 @@
   </script>
 </body>
 </html>
-
-
