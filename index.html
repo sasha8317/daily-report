@@ -7,6 +7,14 @@
   <meta name="theme-color" content="#f4a300" />
   <link rel="manifest" href="manifest.json" />
   <style>
+    /* 修正 iOS Safari 日期欄位右側撐出問題 */
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #fff;
+  position: relative;
+  z-index: 1;
+}
     :root {
       --primary: #f4a300;
       --primary-soft: #ffe8b3;
@@ -394,6 +402,7 @@
   </script>
 </body>
 </html>
+
 
 
 
