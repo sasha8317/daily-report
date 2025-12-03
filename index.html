@@ -1,359 +1,42 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>科林門市每日回報</title>
+const CACHE_NAME = "daily-report-v2";
+const ASSETS = [
+  "./",
+  "index.html",
+  "manifest.json",
+  "icon-192.png",
+  "icon-512.png"
+];
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#f5b400">
-
-<style>
-:root {
-    --border: #d9d9d9;
-    --yellow: #f5b400;
-    --gray-bg: #f7f7f7;
-}
-
-body {
-    font-family: "Segoe UI", Helvetica, Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f2f2f7;
-}
-
-.container {
-    max-width: 420px;
-    margin: 0 auto;
-    padding: 20px 15px 100px;
-}
-
-h1 {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 22px;
-    font-weight: bold;
-}
-
-.subtitle {
-    text-align: center;
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 20px;
-}
-
-.section {
-    background: white;
-    border-radius: 14px;
-    padding: 15px;
-    margin-bottom: 20px;
-    box-shadow: rgba(0,0,0,0.06) 0px 2px 6px;
-}
-
-label {
-    display: block;
-    margin-top: 10px;
-    font-size: 14px;
-}
-
-input[type="text"],
-input[type="number"],
-input[type="date"],
-select {
-    width: 100%;
-    padding: 10px;
-    font-size: 15px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background-color: #fff;
-    box-sizing: border-box;
-    margin-top: 4px;
-}
-
-input[type="date"] {
-    appearance: none;
-    -webkit-appearance: none;
-}
-
-/* 讓所有數字欄位在 iPhone 直接跳出數字鍵盤 */
-input[type="number"] {
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-button {
-    width: 48%;
-    padding: 14px;
-    font-size: 17px;
-    border-radius: 25px;
-    border: none;
-    cursor: pointer;
-}
-
-#generateBtn {
-    background: var(--yellow);
-    color: white;
-    font-weight: bold;
-}
-
-#copyBtn {
-    background: white;
-    border: 2px solid var(--yellow);
-    color: #444;
-    font-weight: bold;
-}
-
-.button-row {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: white;
-    padding: 12px 15px;
-    display: flex;
-    justify-content: space-between;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
-}
-
-textarea {
-    width: 100%;
-    height: 150px;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    margin-top: 10px;
-    font-size: 14px;
-    box-sizing: border-box;
-}
-</style>
-</head>
-
-<body>
-
-<h1>科林門市每日回報</h1>
-<p class="subtitle">輸入數字 → 產生訊息 → 貼到企業微信群組</p>
-
-<div class="container">
-
-    <!-- 基本資料 -->
-    <div class="section">
-        <h2>基本資訊</h2>
-
-        <label>日期：
-            <input type="date" id="date">
-        </label>
-
-        <label>店名：
-            <input type="text" id="store" placeholder="例：站前">
-        </label>
-
-        <label>姓名：
-            <select id="staff">
-                <option value="">請選擇同仁姓名</option>
-                <option>郭孟鑫</option>
-                <option>陳詩潔</option>
-                <option>游瑟焄</option>
-                <option>魏頎恩</option>
-                <option>李孟馨</option>
-                <option>劉瑋婷</option>
-                <option>林瑀婕</option>
-                <option>周曉玄</option>
-                <option>蕭純聿</option>
-                <option>陳宛妤</option>
-                <option>王靖雅</option>
-                <option>林寓葳</option>
-                <option>吳欣珮</option>
-                <option>呂桂梅</option>
-            </select>
-        </label>
-    </div>
-
-    <!-- 1. 今日外撥 -->
-    <div class="section">
-        <h2>1. 今日外撥</h2>
-
-        <label>總外撥通數：
-            <input type="number" id="todayCallTotal" readonly>
-        </label>
-
-        <label>潛客通數：
-            <input type="number" id="todayCallPotential" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>3年以上舊客通數：
-            <input type="number" id="todayCallOld" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-    </div>
-
-    <!-- 2. 今日預約 -->
-    <div class="section">
-        <h2>2. 今日預約（只計新客 + 潛客 + 3年以上舊客）</h2>
-
-        <label>今日預約總數：
-            <input type="number" id="todayApptTotal" readonly>
-        </label>
-
-        <label>新客預約：
-            <input type="number" id="todayApptNew" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>潛客預約：
-            <input type="number" id="todayApptPotential" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>3年以上舊客預約：
-            <input type="number" id="todayApptOld" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-    </div>
-
-    <!-- 3. 今日到店 & 試用 / 成交  -->
-    <div class="section">
-        <h2>3. 今日到店（只計新客 + 潛客 + 3年以上舊客） & 試用 / 成交</h2>
-
-        <label>今日到店總數：
-            <input type="number" id="todayArriveTotal" readonly>
-        </label>
-
-        <label>新客到店：
-            <input type="number" id="arriveNew" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>潛客到店：
-            <input type="number" id="arrivePotential" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>3年以上舊客到店：
-            <input type="number" id="arriveOld" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>試用 HA：
-            <input type="number" id="trialHA" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>試用 APAP：
-            <input type="number" id="trialAPAP" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>成交 HA：
-            <input type="number" id="dealHA" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>成交 APAP：
-            <input type="number" id="dealAPAP" inputmode="numeric" pattern="[0-9]*">
-        </label>
-    </div>
-
-    <!-- 4. 明日預約 -->
-    <div class="section">
-        <h2>4. 明日預約（只計新客 + 潛客 + 3年以上舊客）</h2>
-
-        <label>明日預約總數：
-            <input type="number" id="tmrApptTotal" readonly>
-        </label>
-
-        <label>新客預約：
-            <input type="number" id="tmrApptNew" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>潛客預約：
-            <input type="number" id="tmrApptPotential" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>3年以上舊客預約：
-            <input type="number" id="tmrApptOld" oninput="recalcTotals()" inputmode="numeric" pattern="[0-9]*">
-        </label>
-    </div>
-
-    <!-- 5 明日KPI -->
-    <div class="section">
-        <h2>5. 明日 KPI（外撥）</h2>
-
-        <label>明日預估外撥 KPI：
-            <input type="number" id="tmrKPI" readonly>
-        </label>
-
-        <label>潛客外撥：
-            <input type="number" id="tmrCallPotential" inputmode="numeric" pattern="[0-9]*">
-        </label>
-
-        <label>3年以上舊客外撥：
-            <input type="number" id="tmrCallOld" inputmode="numeric" pattern="[0-9]*">
-        </label>
-    </div>
-
-    <textarea id="output" placeholder="產生的訊息會顯示在這裡"></textarea>
-
-</div>
-
-<!-- 按鈕列 -->
-<div class="button-row">
-    <button id="generateBtn" onclick="generateMessage()">產生訊息</button>
-    <button id="copyBtn" onclick="copyText()">複製文字</button>
-</div>
-
-<script>
-/* KPI 對照表 */
-const KPI_MAP = {
-    "郭孟鑫": 3, "陳詩潔": 2, "游瑟焄": 3, "魏頎恩": 3,
-    "李孟馨": 5, "劉瑋婷": 1, "林瑀婕": 2, "周曉玄": 4,
-    "蕭純聿": 3, "陳宛妤": 4, "王靖雅": 3, "林寓葳": 4,
-    "吳欣珮": 4, "呂桂梅": 17
-};
-
-/* 自動帶入 KPI */
-document.getElementById("staff").addEventListener("change", function () {
-    const name = this.value;
-    document.getElementById("tmrKPI").value = KPI_MAP[name] || "";
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+  );
+  self.skipWaiting();
 });
 
-/* 自動計算 */
-function toNum(v){ return v ? parseInt(v) : 0; }
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
+});
 
-function recalcTotals() {
-    document.getElementById("todayCallTotal").value =
-        toNum(todayCallPotential.value) + toNum(todayCallOld.value);
-
-    document.getElementById("todayApptTotal").value =
-        toNum(todayApptNew.value) + toNum(todayApptPotential.value) + toNum(todayApptOld.value);
-
-    document.getElementById("todayArriveTotal").value =
-        toNum(arriveNew.value) + toNum(arrivePotential.value) + toNum(arriveOld.value);
-
-    document.getElementById("tmrApptTotal").value =
-        toNum(tmrApptNew.value) + toNum(tmrApptPotential.value) + toNum(tmrApptOld.value);
-}
-
-/* 產生文字 */
-function generateMessage() {
-    const txt =
-`${date.value} | ${store.value} + ${staff.value}
-
-1. 今日外撥：${todayCallTotal.value}通（潛客${todayCallPotential.value}通 + 3年以上舊客${todayCallOld.value}通）
-
-2. 今日預約：${todayApptTotal.value}位（新客${todayApptNew.value}位 + 潛客${todayApptPotential.value}位 + 3年以上舊客${todayApptOld.value}位）
-
-3. 今日到店：${todayArriveTotal.value}位（新客${arriveNew.value}位 + 潛客${arrivePotential.value}位 + 3年以上舊客${arriveOld.value}位）
-   試用：HA ${trialHA.value}位、APAP ${trialAPAP.value}位
-   成交：HA ${dealHA.value}位、APAP ${dealAPAP.value}位
-
-4. 明日預約：${tmrApptTotal.value}位（新客${tmrApptNew.value}位 + 潛客${tmrApptPotential.value}位 + 3年以上舊客${tmrApptOld.value}位）
-
-5. 明日KPI：${tmrKPI.value}通（潛客${tmrCallPotential.value}通 + 3年以上舊客${tmrCallOld.value}通）`;
-
-    document.getElementById("output").value = txt;
-}
-
-/* 複製 */
-function copyText() {
-    navigator.clipboard.writeText(document.getElementById("output").value);
-    alert("已複製！");
-}
-
-/* 日期預設今天 */
-document.getElementById("date").valueAsDate = new Date();
-</script>
-
-</body>
-</html>
-
-
+// 👉「線上優先」策略：能上網就拿最新的，看不見才用快取
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // 把最新的檔案丟進快取（非必須，但順手）
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+  );
+});
