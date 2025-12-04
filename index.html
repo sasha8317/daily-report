@@ -1,242 +1,239 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <title>科林門市每日回報</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>科林門市每日回報</title>
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<style>
+:root {
+  --primary:#f4a300;
+  --border:#E5E5E5;
+  --bg:#f7f7f8;
+  --radius:12px;
+}
 
-  <style>
-    :root{
-      --primary:#f4a300;
-      --border:#e0e0e0;
-      --bg:#f6f6f8;
-    }
+body {
+  margin:0;
+  background:var(--bg);
+  font-family:"SF Pro Text",system-ui,-apple-system,BlinkMacSystemFont;
+  display:flex;
+  justify-content:center;
+  padding-bottom:90px;
+}
 
-    /* 防止欄位被撐破 */
-    *,*::before,*::after{ box-sizing:border-box; }
+.container{
+  width:100%;
+  max-width:520px;
+  padding:16px;
+}
 
-    body{
-      font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-      margin:0;padding:14px 14px 90px;background:var(--bg);
-      display:flex;justify-content:center;color:#111;
-    }
+/* 標題 */
+h1{
+  text-align:center;
+  font-size:24px;
+  margin-top:10px;
+  font-weight:700;
+}
+.subtitle{
+  text-align:center;
+  font-size:13px;
+  color:#666;
+  margin-bottom:16px;
+}
 
-    .container{max-width:520px;width:100%;}
+/* 卡片外框 */
+.box{
+  background:#fff;
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:18px;
+  box-shadow:0 2px 5px rgba(0,0,0,.05);
+}
 
-    .section{
-      background:#fff;border-radius:14px;border:1px solid var(--border);
-      padding:14px;margin-bottom:12px;
-    }
-    .section h2{margin:0 0 8px;font-size:16px;font-weight:700;}
+/*** ❗iOS 日期欄溢出修復關鍵 **/
+.date-wrap{
+  width:100%;
+  display:block;
+}
+.date-wrap input[type="date"]{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+  display:block;
+  padding-right:0;
+}
 
-    input,select{
-      width:100%;padding:10px;border-radius:10px;font-size:16px;
-      border:1px solid var(--border);margin-top:6px;margin-bottom:12px;
-      background:#fff;
-    }
+/* input 樣式 */
+input,select{
+  width:100%;
+  padding:12px;
+  font-size:16px;
+  margin-top:6px;
+  margin-bottom:12px;
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  background:#fff;
+}
 
-    /* 🔧 特別指定 date 欄位也用 border-box，避免 iOS 撐出邊線 */
-    input[type="date"]{
-      box-sizing:border-box;
-      max-width:100%;
-    }
+/* 🔢 數字欄位改用 number 使手機彈出數字鍵盤 */
+input[type="number"]{
+  -webkit-appearance:none;
+  appearance:none;
+}
 
-    textarea{
-      width:100%;height:200px;padding:12px;font-size:15px;
-      border-radius:10px;border:1px solid var(--border);resize:vertical;
-    }
+/* 按鈕列 */
+.btn-area{
+  display:flex;
+  gap:10px;
+  position:fixed;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:520px;
+  padding:0 14px;
+}
+button{
+  flex:1;
+  padding:14px 0;
+  font-size:18px;
+  border-radius:var(--radius);
+  border:2px solid var(--primary);
+}
+.send{
+  background:var(--primary);
+  color:#fff;
+}
+.copy{
+  background:white;
+  color:var(--primary);
+}
 
-    .actions{
-      position:fixed;left:0;right:0;bottom:0;padding:10px;
-      background:#ffffffee;display:flex;gap:10px;backdrop-filter:blur(6px);
-      border-top:1px solid var(--border);
-    }
-    button{
-      flex:1;padding:14px 0;border-radius:30px;border:none;font-size:17px;font-weight:700;
-    }
-    .btn-primary{background:var(--primary);color:#fff;}
-    .btn-second{background:#fff;border:2px solid var(--primary);color:#333;}
-  </style>
+/* 產生訊息框 */
+#result{
+  width:100%;
+  margin-top:12px;
+  min-height:120px;
+  white-space:pre-line;
+  padding:10px;
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  background:#fff;
+}
+</style>
 </head>
 
 <body>
-  <div class="container">
+<div class="container">
 
-    <h1 style="text-align:center;margin:6px 0 2px;">科林門市每日回報</h1>
-    <p style="text-align:center;font-size:13px;color:#777;margin-bottom:12px;">輸入數字 → 產生訊息 → 貼企業微信群組</p>
+<h1>科林門市每日回報</h1>
+<div class="subtitle">輸入數字 → 產生訊息 → 貼到企業微信群組</div>
 
-    <!-- 基本資訊 -->
-    <div class="section">
-      <h2>基本資訊</h2>
+<!-- 基本資訊 -->
+<div class="box">
+  <h3>基本資訊</h3>
 
-      <label>日期：
-        <input type="date" id="date">
-      </label>
-
-      <label>店名：
-        <input type="text" id="store" placeholder="例：站前">
-      </label>
-
-      <label>姓名：
-        <select id="name">
-          <option value="">請選擇同仁</option>
-          <option>郭孟鑫</option><option>陳詩潔</option><option>游瑟焄</option>
-          <option>魏頎恩</option><option>李孟馨</option><option>劉瑋婷</option>
-          <option>林瑀婕</option><option>周曉玄</option><option>蕭純聿</option>
-          <option>陳宛妤</option><option>王靖雅</option><option>林寓葳</option>
-          <option>吳欣珮</option><option>呂桂梅</option>
-        </select>
-      </label>
-    </div>
-
-    <!-- 1 今日外撥 -->
-    <div class="section">
-      <h2>1. 今日外撥</h2>
-
-      <label>潛客外撥通數：
-        <input type="number" id="todayCallPotential" inputmode="numeric" oninput="recalcTotals()">
-      </label>
-
-      <label>過保舊客外撥通數：
-        <input type="number" id="todayCallOld3Y" inputmode="numeric" oninput="recalcTotals()">
-      </label>
-
-      <label>今日外撥總通數：
-        <input type="number" id="todayCallTotal" readonly style="background:#f2f2f2;">
-      </label>
-    </div>
-
-    <!-- 2 今日預約 -->
-    <div class="section">
-      <h2>2. 今日預約</h2>
-      <label>今日預約總數：
-        <input type="number" id="todayBookingTotal" inputmode="numeric">
-      </label>
-    </div>
-
-    <!-- 3 今日到店 -->
-    <div class="section">
-      <h2>3. 今日到店</h2>
-
-      <label>今日到店總數：
-        <input type="number" id="todayVisitTotal" inputmode="numeric">
-      </label>
-
-      <label>試用 HA：
-        <input type="number" id="trialHA" inputmode="numeric">
-      </label>
-
-      <label>試用 APAP：
-        <input type="number" id="trialAPAP" inputmode="numeric">
-      </label>
-
-      <label>成交 HA：
-        <input type="number" id="dealHA" inputmode="numeric">
-      </label>
-
-      <label>成交 APAP：
-        <input type="number" id="dealAPAP" inputmode="numeric">
-      </label>
-    </div>
-
-    <!-- 4 明日預約 -->
-    <div class="section">
-      <h2>4. 明日已排預約</h2>
-      <label>明日預約總數：
-        <input type="number" id="tomorrowBookingTotal" inputmode="numeric">
-      </label>
-    </div>
-
-    <!-- 5 KPI -->
-    <div class="section">
-      <h2>5. 明日 KPI</h2>
-
-      <label>外撥目標通數：
-        <input type="number" id="tomorrowKpiCallTotal" inputmode="numeric">
-      </label>
-
-      <label>舊客預約目標(位)：
-        <input type="number" id="tomorrowKpiCallOld3Y" inputmode="numeric">
-      </label>
-
-      <label>完成試戴目標(個)：
-        <input type="number" id="tomorrowKpiTrial" inputmode="numeric">
-      </label>
-    </div>
-
-    <div class="section">
-      <textarea id="output" placeholder="產生後結果會顯示於此"></textarea>
-    </div>
-
+  <label>日期：</label>
+  <div class="date-wrap">
+    <input type="date" id="date">
   </div>
 
-  <!-- 固定按鈕 -->
-  <div class="actions">
-    <button class="btn-primary" onclick="generateMessage()">產生訊息</button>
-    <button class="btn-second" onclick="copyMessage()">複製文字</button>
-  </div>
+  <label>店名：</label>
+  <input id="store" placeholder="例：站前">
 
-  <script>
-    // 進入頁面自動填入今天日期
-    document.addEventListener("DOMContentLoaded", function () {
-      const dateInput = document.getElementById("date");
-      if (!dateInput) return;
-      if (dateInput.value) return;
+  <label>姓名：</label>
+  <select id="staff">
+    <option value="">請選擇同仁姓名</option>
+    <option>李孟馨</option>
+    <option>陳雅如</option>
+    <option>謝昊診</option>
+    <option>洳瑜</option>
+  </select>
+</div>
 
-      const today   = new Date();
-      const yyyy    = today.getFullYear();
-      const mm      = String(today.getMonth() + 1).padStart(2, "0");
-      const dd      = String(today.getDate()).padStart(2, "0");
-      const value   = `${yyyy}-${mm}-${dd}`;
+<!-- 1. 外撥 -->
+<div class="box">
+  <h3>1. 今日外撥</h3>
+  <label>潛客外撥通數：</label> <input type="number" id="callNew">
+  <label>過保舊客外撥通數：</label> <input type="number" id="callOld">
+  <label>今日外撥總通數：</label> <input type="number" id="callTotal">
+</div>
 
-      dateInput.value = value;
-      dateInput.setAttribute("value", value);
-    });
+<!-- 2. 今日預約 -->
+<div class="box">
+  <h3>2. 今日預約</h3>
+  <label>今日預約總數：</label> <input type="number" id="bookTotal">
+</div>
 
-    // 只自動計算：今日外撥 = 潛客 + 過保舊客
-    function recalcTotals(){
-      const total = get("todayCallPotential") + get("todayCallOld3Y");
-      document.getElementById("todayCallTotal").value = total>0 ? total : "";
-    }
-    function get(id){
-      return parseInt(document.getElementById(id).value) || 0;
-    }
+<!-- 3. 今日到店 -->
+<div class="box">
+  <h3>3. 今日到店</h3>
+  <label>今日到店數：</label> <input type="number" id="arriveTotal">
 
-    // 產生訊息
-    function generateMessage(){
-      const rawDate = document.getElementById("date").value || "";
-      const date = rawDate ? rawDate.replace(/-/g,"/") : "____/__/__";
-      const store = document.getElementById("store").value || "門市";
-      const name  = document.getElementById("name").value || "姓名";
+  <label>試用HA：</label> <input type="number" id="trialHA">
+  <label>試用APAP：</label> <input type="number" id="trialAPAP">
 
-      const text =
-`${date}｜${store} ${name}
-1. 今日外撥：${get("todayCallTotal")} 通（潛在 ${get("todayCallPotential")} 通、過保舊客 ${get("todayCallOld3Y")} 通）
-2. 今日預約：${get("todayBookingTotal")} 位
-3. 今日到店：${get("todayVisitTotal")} 位
-   試用：HA ${get("trialHA")} 位、APAP ${get("trialAPAP")} 位
-   成交：HA ${get("dealHA")} 位、APAP ${get("dealAPAP")} 位
-4. 明日已排預約：${get("tomorrowBookingTotal")} 位
+  <label>成交HA：</label> <input type="number" id="dealHA">
+  <label>成交APAP：</label> <input type="number" id="dealAPAP">
+</div>
+
+<!-- 4. 明日 -->
+<div class="box">
+  <h3>4. 明日已排預約</h3>
+  <label>明日預約總數：</label> <input type="number" id="tomoTotal">
+</div>
+
+<!-- 5. KPI -->
+<div class="box">
+  <h3>5. 明日KPI</h3>
+  <label>明日外撥KPI：</label> <input type="number" id="kpiCall">
+  <label>舊客預約KPI：</label> <input type="number" id="kpiOld">
+  <label>完成試戴目標：</label> <input type="number" id="kpiTrial">
+</div>
+
+<textarea id="result" placeholder="產生後文字會顯示在這裡"></textarea>
+
+
+<!-- 按鈕區 -->
+<div class="btn-area">
+  <button class="send" onclick="generate()">產生訊息</button>
+  <button class="copy" onclick="copyText()">複製文字</button>
+</div>
+
+</div>
+
+<script>
+function generate(){
+ let d = document.getElementById("date").value || "未填";
+ let s = document.getElementById("store").value;
+ let n = document.getElementById("staff").value;
+
+ let msg =
+ `${d}｜${s}＋${n}
+1. 今日外撥：${val("callTotal")} 通（潛在 ${val("callNew")} 通、過保舊客 ${val("callOld")} 通）
+2. 今日預約：${val("bookTotal")} 位
+3. 今日到店：${val("arriveTotal")} 位
+試用：HA ${val("trialHA")} 位、APAP ${val("trialAPAP")} 位
+成交：HA ${val("dealHA")} 位、APAP ${val("dealAPAP")} 位
+4. 明日已排預約：${val("tomoTotal")} 位
 5. 明日KPI:
-   外撥 ${get("tomorrowKpiCallTotal")} 通
-   舊客預約 ${get("tomorrowKpiCallOld3Y")} 位
-   完成 ${get("tomorrowKpiTrial")} 個試戴`;
+外撥 ${val("kpiCall")} 通
+舊客預約 ${val("kpiOld")} 位
+完成 ${val("kpiTrial")} 個試戴`;
 
-      document.getElementById("output").value = text;
-    }
+ document.getElementById("result").value = msg;
+}
 
-    // 複製文字
-    function copyMessage(){
-      const o = document.getElementById("output");
-      o.select();
-      o.setSelectionRange(0,99999);
-      document.execCommand("copy");
-      alert("已複製，前往企業微信貼上即可！");
-    }
-  </script>
+function val(id){
+ return document.getElementById(id).value || 0;
+}
+
+function copyText(){
+ navigator.clipboard.writeText(document.getElementById("result").value);
+ alert("已複製，直接貼到群組即可！");
+}
+</script>
+
 </body>
 </html>
