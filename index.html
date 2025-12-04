@@ -371,26 +371,28 @@ input[type="date"] {
           sum ? String(sum) : "";
       }
     }
+    
+function generateMessage() {
+  const dateRaw = document.getElementById("date").value || "";
+  const date = dateRaw ? dateRaw.replaceAll("-", "/") : "____/__/__";
+  const store = document.getElementById("store").value || "門市";
+  const name = document.getElementById("name").value || "姓名";
 
-    function generateMessage() {
-      const dateRaw = document.getElementById("date").value || "";
-      const date = dateRaw ? dateRaw.replaceAll("-", "/") : "____/__/__";
-      const store = document.getElementById("store").value || "門市名稱";
-      const name = document.getElementById("name").value || "同仁";
-
-      const text =
+  const text =
 `${date}｜${store} ${name}
-
-1. 今日外撥：${getNum("todayCallTotal")} 通（只計潛客 ${getNum("todayCallPotential")} 通 + 3年以上舊客 ${getNum("todayCallOld3Y")} 通）
-2. 今日預約：${getNum("todayBookingTotal")} 位（只計新客 ${getNum("todayBookingNew")} 位 + 潛客 ${getNum("todayBookingPotential")} 位 + 3年以上舊客 ${getNum("todayBookingOld3Y")} 位，不含其他服務的預約數）
-3. 今日到店：${getNum("todayVisitTotal")} 位（只計新客 ${getNum("todayVisitNew")} 位 + 潛客 ${getNum("todayVisitPotential")} 位 + 3年以上舊客 ${getNum("todayVisitOld3Y")} 位）
+1. 今日外撥：${getNum("todayCallTotal")} 通（潛在 ${getNum("todayCallPotential")} 通、過保舊客 ${getNum("todayCallOld3Y")} 通）
+2. 今日預約：${getNum("todayBookingTotal")} 位
+3. 今日到店：${getNum("todayVisitTotal")} 位
    試用：HA ${getNum("trialHA")} 位、APAP ${getNum("trialAPAP")} 位
    成交：HA ${getNum("dealHA")} 位、APAP ${getNum("dealAPAP")} 位
-4. 明日預約：${getNum("tomorrowBookingTotal")} 位（只計新客 ${getNum("tomorrowBookingNew")} 位 + 潛客 ${getNum("tomorrowBookingPotential")} 位 + 3年以上舊客 ${getNum("tomorrowBookingOld3Y")} 位）
-5. 明日 KPI：${getNum("tomorrowKpiCallTotal")} 通外撥（只計潛客 ${getNum("tomorrowKpiCallPotential")} 通 + 3年以上舊客 ${getNum("tomorrowKpiCallOld3Y")} 通），其中 ${getNum("tomorrowKpiTrial")} 位預約試用`;
+4. 明日已排預約：${getNum("tomorrowBookingTotal")} 位
+5. 明日KPI：
+   外撥 ${getNum("tomorrowKpiCallTotal")} 通
+   舊客預約 ${getNum("tomorrowKpiCallOld3Y")} 位
+   完成 ${getNum("tomorrowKpiTrial")} 個試戴`;
 
-      document.getElementById("output").value = text;
-    }
+  document.getElementById("output").value = text;
+}
 
     function copyMessage() {
       const textarea = document.getElementById("output");
