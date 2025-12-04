@@ -1,44 +1,36 @@
-const CACHE_NAME = "daily-report-v2";
-const ASSETS = [
+const CACHE_NAME = "daily-report-v2";   // ← 換 icon、換內容時只要改這行的版本
+const urlsToCache = [
   "./",
-  "index.html",
-  "manifest.json",
-  "icon-192.png",
-  "icon-512.png"
+  "./index.html",
+  "./manifest.json",
+  "./icon-192-v2.png",
+  "./icon-512-v2.png"
 ];
 
-self.addEventListener("install", event => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
-  self.skipWaiting();
 });
 
-self.addEventListener("activate", event => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-      )
-    )
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);   // 刪舊 Cache，強制更新
+          }
+        })
+      );
+    })
   );
-  self.clients.claim();
 });
 
-// 👉「線上優先」策略：能上網就拿最新的，看不見才用快取
-self.addEventListener("fetch", event => {
+self.addEventListener("fetch", (event) => {
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // 把最新的檔案丟進快取（非必須，但順手）
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-        return response;
-      })
-      .catch(() => caches.match(event.request))
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
   );
 });
-
-
