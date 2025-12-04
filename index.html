@@ -1,284 +1,219 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <title>科林門市每日回報</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>科林門市每日回報</title>
 
-  <style>
-    :root{
-      --primary:#f4a300;
-      --border:#e0e0e0;
-      --bg:#f6f6f8;
-    }
+<style>
+:root{
+  --primary:#f4a300;
+  --border:#e0e0e0;
+  --bg:#f6f6f8;
+}
 
-    /* 所有元素用 border-box，避免寬度計算怪怪 */
-    *,*::before,*::after{ box-sizing:border-box; }
+*,*::before,*::after{ box-sizing:border-box; }
 
-    body{
-      font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-      margin:0;
-      padding:14px 14px 90px;
-      background:var(--bg);
-      display:flex;
-      justify-content:center;
-      color:#111;
-    }
+body{
+  font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  margin:0;
+  padding:14px 14px 90px;
+  background:var(--bg);
+  display:flex;
+  justify-content:center;
+  color:#111;
+}
 
-    .container{
-      width:100%;
-      max-width:520px;
-    }
+.container{ width:100%; max-width:520px; }
 
-    h1{
-      text-align:center;
-      margin:6px 0 2px;
-      font-size:22px;
-      font-weight:700;
-    }
-    .subtitle{
-      text-align:center;
-      font-size:13px;
-      color:#777;
-      margin-bottom:12px;
-    }
+h1{ text-align:center; margin:6px 0 2px; font-size:22px; font-weight:700; }
+.subtitle{ text-align:center; font-size:13px; color:#777; margin-bottom:12px; }
 
-    .section{
-      background:#fff;
-      border-radius:14px;
-      border:1px solid var(--border);
-      padding:14px;
-      margin-bottom:12px;
-      /* 🔒 關鍵：不要讓任何東西跑出卡片外 */
-      overflow:hidden;
-    }
-    .section h2{
-      margin:0 0 8px;
-      font-size:16px;
-      font-weight:700;
-    }
+.section{
+  background:#fff; border-radius:14px; border:1px solid var(--border);
+  padding:14px; margin-bottom:12px; overflow:hidden;
+}
+.section h2{ margin:0 0 8px; font-size:16px; font-weight:700; }
 
-    label{
-      display:block;
-      font-size:14px;
-      margin-top:4px;
-    }
+label{ display:block;font-size:14px;margin-top:4px; }
 
-    input,select{
-      width:100%;
-      padding:10px;
-      font-size:16px;
-      margin-top:4px;
-      margin-bottom:10px;
-      border-radius:10px;
-      border:1px solid var(--border);
-      background:#fff;
-    }
+input,select{
+  width:100%;
+  padding:10px; font-size:16px;
+  margin-top:4px; margin-bottom:10px;
+  border-radius:10px; border:1px solid var(--border);
+  background:#fff;
+}
 
-    input[readonly]{
-      background:#f3f3f3;
-    }
+/*👉唯一固定iOS爆框的重點*/
+input[type="date"]{
+  width:98%;
+  margin:auto;
+  display:block;
+}
 
-    textarea{
-      width:100%;
-      height:200px;
-      padding:10px;
-      font-size:15px;
-      border-radius:10px;
-      border:1px solid var(--border);
-      resize:vertical;
-    }
+/* readonly 欄位微灰 */
+input[readonly]{ background:#f3f3f3; }
 
-    .actions{
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      padding:10px 14px 12px;
-      background:#ffffffee;
-      border-top:1px solid var(--border);
-      display:flex;
-      gap:10px;
-      justify-content:center;
-      backdrop-filter:blur(6px);
-    }
+textarea{
+  width:100%; height:200px; padding:10px;
+  font-size:15px; border-radius:10px;
+  border:1px solid var(--border);
+}
 
-    button{
-      flex:1;
-      padding:12px 0;
-      border-radius:26px;
-      border:none;
-      font-size:16px;
-      font-weight:600;
-    }
-    .btn-primary{
-      background:var(--primary);
-      color:#fff;
-    }
-    .btn-secondary{
-      background:#fff;
-      color:#333;
-      border:1px solid var(--primary);
-    }
-  </style>
+.actions{
+  position:fixed;left:0;right:0;bottom:0;
+  padding:10px 14px 12px;background:#ffffffee;
+  display:flex;gap:10px;border-top:1px solid var(--border);
+  backdrop-filter:blur(6px);
+}
+
+button{
+  flex:1;padding:12px 0;border-radius:26px;border:none;
+  font-size:16px;font-weight:600;
+}
+.btn-primary{ background:var(--primary);color:#fff; }
+.btn-secondary{ background:#fff;color:#333;border:1px solid var(--primary); }
+
+</style>
 </head>
 
 <body>
-  <div class="container">
+<div class="container">
 
-    <h1>科林門市每日回報</h1>
-    <p class="subtitle">輸入數字 → 產生訊息 → 貼到企業微信群組</p>
+<h1>科林門市每日回報</h1>
+<p class="subtitle">輸入數字 → 產生訊息 → 貼到企業微信群組</p>
 
-    <!-- 基本資訊 -->
-    <div class="section">
-      <h2>基本資訊</h2>
 
-      <label>日期：
-        <input type="date" id="date">
-      </label>
+<!-- 基本資訊 -->
+<div class="section">
+<h2>基本資訊</h2>
 
-      <label>店名：
-        <input type="text" id="store" placeholder="例：站前">
-      </label>
+<label>日期：
+  <input type="date" id="date">
+</label>
 
-      <label>姓名：
-        <select id="name">
-          <option value="">請選擇同仁姓名</option>
-          <option>郭孟鑫</option><option>陳詩潔</option><option>游瑟焄</option>
-          <option>魏頎恩</option><option>李孟馨</option><option>劉瑋婷</option>
-          <option>林瑀婕</option><option>周曉玄</option><option>蕭純聿</option>
-          <option>陳宛妤</option><option>王靖雅</option><option>林寓葳</option>
-          <option>吳欣珮</option><option>呂桂梅</option>
-        </select>
-      </label>
-    </div>
+<label>店名：
+  <input type="text" id="store" placeholder="例：站前">
+</label>
 
-    <!-- 1. 今日外撥 -->
-    <div class="section">
-      <h2>1. 今日外撥</h2>
+<label>姓名：
+<select id="name">
+<option value="">請選擇同仁姓名</option>
+<option>郭孟鑫</option><option>陳詩潔</option><option>游瑟焄</option>
+<option>魏頎恩</option><option>李孟馨</option><option>劉瑋婷</option>
+<option>林瑀婕</option><option>周曉玄</option><option>蕭純聿</option>
+<option>陳宛妤</option><option>王靖雅</option><option>林寓葳</option>
+<option>吳欣珮</option><option>呂桂梅</option>
+</select>
+</label>
+</div>
 
-      <label>潛客外撥通數：
-        <input type="number" id="todayCallPotential" inputmode="numeric" oninput="recalcTotals()">
-      </label>
+<!-- 1.今日外撥 -->
+<div class="section">
+<h2>1. 今日外撥</h2>
 
-      <label>過保舊客外撥通數：
-        <input type="number" id="todayCallOld3Y" inputmode="numeric" oninput="recalcTotals()">
-      </label>
+<label>潛客外撥通數：
+<input type="number" id="todayCallPotential" inputmode="numeric" oninput="recalcTotals()">
+</label>
 
-      <label>今日外撥總通數：
-        <input type="number" id="todayCallTotal" readonly>
-      </label>
-    </div>
+<label>過保舊客外撥通數：
+<input type="number" id="todayCallOld3Y" inputmode="numeric" oninput="recalcTotals()">
+</label>
 
-    <!-- 2. 今日預約 -->
-    <div class="section">
-      <h2>2. 今日預約</h2>
+<label>今日外撥總通數：
+<input type="number" id="todayCallTotal" readonly>
+</label>
+</div>
 
-      <label>今日預約總數：
-        <input type="number" id="todayBookingTotal" inputmode="numeric">
-      </label>
-    </div>
+<!-- 2. 今日預約 -->
+<div class="section">
+<h2>2. 今日預約</h2>
+<label>今日預約總數：
+<input type="number" id="todayBookingTotal" inputmode="numeric">
+</label>
+</div>
 
-    <!-- 3. 今日到店 -->
-    <div class="section">
-      <h2>3. 今日到店</h2>
+<!-- 3. 今日到店 -->
+<div class="section">
+<h2>3. 今日到店</h2>
+<label>今日到店總數：
+<input type="number" id="todayVisitTotal" inputmode="numeric">
+</label>
 
-      <label>今日到店總數：
-        <input type="number" id="todayVisitTotal" inputmode="numeric">
-      </label>
+<label>試用 HA：
+<input type="number" id="trialHA" inputmode="numeric">
+</label>
+<label>試用 APAP：
+<input type="number" id="trialAPAP" inputmode="numeric">
+</label>
+<label>成交 HA：
+<input type="number" id="dealHA" inputmode="numeric">
+</label>
+<label>成交 APAP：
+<input type="number" id="dealAPAP" inputmode="numeric">
+</label>
+</div>
 
-      <label>試用 HA：
-        <input type="number" id="trialHA" inputmode="numeric">
-      </label>
+<!-- 4. 明日已排預約 -->
+<div class="section">
+<h2>4. 明日已排預約</h2>
+<label>明日預約總數：
+<input type="number" id="tomorrowBookingTotal" inputmode="numeric">
+</label>
+</div>
 
-      <label>試用 APAP：
-        <input type="number" id="trialAPAP" inputmode="numeric">
-      </label>
+<!-- 5. 明日KPI -->
+<div class="section">
+<h2>5. 明日 KPI</h2>
+<label>外撥目標通數：
+<input type="number" id="tomorrowKpiCallTotal" inputmode="numeric">
+</label>
 
-      <label>成交 HA：
-        <input type="number" id="dealHA" inputmode="numeric">
-      </label>
+<label>舊客預約目標 (位)：
+<input type="number" id="tomorrowKpiCallOld3Y" inputmode="numeric">
+</label>
 
-      <label>成交 APAP：
-        <input type="number" id="dealAPAP" inputmode="numeric">
-      </label>
-    </div>
+<label>完成試戴目標 (個)：
+<input type="number" id="tomorrowKpiTrial" inputmode="numeric">
+</label>
+</div>
 
-    <!-- 4. 明日已排預約 -->
-    <div class="section">
-      <h2>4. 明日已排預約</h2>
+<!-- output -->
+<div class="section">
+<textarea id="output" placeholder="按下『產生訊息』後文字會出現在這裡"></textarea>
+</div>
 
-      <label>明日預約總數：
-        <input type="number" id="tomorrowBookingTotal" inputmode="numeric">
-      </label>
-    </div>
+</div>
 
-    <!-- 5. 明日 KPI -->
-    <div class="section">
-      <h2>5. 明日 KPI</h2>
+<!-- button -->
+<div class="actions">
+<button class="btn-primary" onclick="generateMessage()">產生訊息</button>
+<button class="btn-secondary" onclick="copyMessage()">複製文字</button>
+</div>
 
-      <label>外撥目標通數：
-        <input type="number" id="tomorrowKpiCallTotal" inputmode="numeric">
-      </label>
 
-      <label>舊客預約目標 (位)：
-        <input type="number" id="tomorrowKpiCallOld3Y" inputmode="numeric">
-      </label>
+<script>
+// 今天日期自動填
+document.addEventListener("DOMContentLoaded",()=>{
+ let d=new Date(),m=("0"+(d.getMonth()+1)).slice(-2),day=("0"+d.getDate()).slice(-2);
+ document.getElementById("date").value=`${d.getFullYear()}-${m}-${day}`;
+});
 
-      <label>完成試戴目標 (個)：
-        <input type="number" id="tomorrowKpiTrial" inputmode="numeric">
-      </label>
-    </div>
+// 外撥加總
+function getNum(id){ return parseInt(document.getElementById(id).value||0) }
+function recalcTotals(){
+ document.getElementById("todayCallTotal").value=getNum("todayCallPotential")+getNum("todayCallOld3Y")||"";
+}
 
-    <!-- 結果輸出 -->
-    <div class="section">
-      <textarea id="output" placeholder="按下「產生訊息」後，這裡會出現要貼到群組的文字"></textarea>
-    </div>
+// 產生訊息
+function generateMessage(){
+const d=document.getElementById("date").value.replace(/-/g,"/");
+const s=document.getElementById("store").value||"門市";
+const n=document.getElementById("name").value||"姓名";
 
-  </div>
-
-  <!-- 底部按鈕 -->
-  <div class="actions">
-    <button class="btn-primary" onclick="generateMessage()">產生訊息</button>
-    <button class="btn-secondary" onclick="copyMessage()">複製文字</button>
-  </div>
-
-  <script>
-    // 頁面載入時，自動填入今天日期
-    document.addEventListener("DOMContentLoaded", function () {
-      const dateInput = document.getElementById("date");
-      if (!dateInput) return;
-      if (dateInput.value) return;
-
-      const today = new Date();
-      const yyyy  = today.getFullYear();
-      const mm    = String(today.getMonth() + 1).padStart(2, "0");
-      const dd    = String(today.getDate()).padStart(2, "0");
-      dateInput.value = `${yyyy}-${mm}-${dd}`;
-    });
-
-    // 自動計算：今日外撥總通數 = 潛客 + 過保舊客
-    function recalcTotals(){
-      const total =
-        getNum("todayCallPotential") + getNum("todayCallOld3Y");
-      document.getElementById("todayCallTotal").value =
-        total ? String(total) : "";
-    }
-
-    function getNum(id){
-      const v = parseInt(document.getElementById(id).value,10);
-      return isNaN(v) ? 0 : v;
-    }
-
-    // 產生訊息文字
-    function generateMessage(){
-      const dateRaw = document.getElementById("date").value || "";
-      const date    = dateRaw ? dateRaw.replace(/-/g,"/") : "____/__/__";
-      const store   = document.getElementById("store").value || "門市";
-      const name    = document.getElementById("name").value || "姓名";
-
-      const text =
-`${date}｜${store} ${name}
+document.getElementById("output").value=
+`${d}｜${s} ${n}
 1. 今日外撥：${getNum("todayCallTotal")} 通（潛在 ${getNum("todayCallPotential")} 通、過保舊客 ${getNum("todayCallOld3Y")} 通）
 2. 今日預約：${getNum("todayBookingTotal")} 位
 3. 今日到店：${getNum("todayVisitTotal")} 位
@@ -289,18 +224,15 @@
    外撥 ${getNum("tomorrowKpiCallTotal")} 通
    舊客預約 ${getNum("tomorrowKpiCallOld3Y")} 位
    完成 ${getNum("tomorrowKpiTrial")} 個試戴`;
+}
 
-      document.getElementById("output").value = text;
-    }
-
-    // 複製文字
-    function copyMessage(){
-      const o = document.getElementById("output");
-      o.select();
-      o.setSelectionRange(0, 99999);
-      document.execCommand("copy");
-      alert("已複製，前往企業微信貼上即可！");
-    }
-  </script>
+// 複製
+function copyMessage(){
+const o=document.getElementById("output");
+o.select();o.setSelectionRange(0,99999);
+document.execCommand("copy");
+alert("已複製，前往企業微信貼上即可！");
+}
+</script>
 </body>
 </html>
