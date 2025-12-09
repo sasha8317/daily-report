@@ -86,11 +86,82 @@ button{
 }
 .btn-primary{ background:var(--primary);color:#fff; }
 .btn-secondary{ background:#fff;color:#333;border:1px solid var(--primary); }
+/* === 聖誕主題（僅 test 版使用） === */
+body.theme-xmas {
+  background: #f5f5f7;
+}
+
+/* 標題加上聖誕氛圍 */
+body.theme-xmas h1 {
+  color: #d32f2f; /* 紅一點 */
+}
+
+body.theme-xmas h1::after {
+  content: " 🎄";
+}
+
+/* 副標顏色略偏綠 */
+body.theme-xmas .subtitle {
+  color: #2e7d32;
+}
+
+/* 卡片邊線＆陰影微調成聖誕感 */
+body.theme-xmas .section {
+  border-color: #e0f2f1;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+
+/* 主要按鈕改成聖誕紅＋輕微圓角 */
+body.theme-xmas .btn-primary {
+  background: #d32f2f;
+}
+
+/* 次要按鈕外框略帶綠色 */
+body.theme-xmas .btn-secondary {
+  border-color: #2e7d32;
+}
+
+/* 讓內容在雪花之上 */
+body.theme-xmas .container,
+body.theme-xmas .section {
+  position: relative;
+  z-index: 1;
+}
+
+/* 雪花樣式（細小、柔和） */
+body.theme-xmas .snowflake {
+  position: fixed;
+  top: -10px;
+  left: 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 10px;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  animation-name: snow-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* 下雪動畫 */
+@keyframes snow-fall {
+  0% {
+    transform: translate3d(var(--x-start), -10px, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--x-end), 110vh, 0);
+    opacity: 0;
+  }
+}
 
 </style>
 </head>
 
-<body>
+<body class="theme-xmas">
 <div class="container">
 
 <h1>科林門市每日回報</h1>
@@ -245,6 +316,35 @@ o.select();o.setSelectionRange(0,99999);
 document.execCommand("copy");
 alert("已複製，前往企業微信貼上即可！");
 }
+
+
+// 聖誕版：柔和下雪效果（S1）
+(function () {
+  if (!document.body.classList.contains('theme-xmas')) return;
+
+  const snowCount = 18; // 雪花數量，想更少可以改 12、15 之類
+  const body = document.body;
+
+  for (let i = 0; i < snowCount; i++) {
+    const span = document.createElement('span');
+    span.className = 'snowflake';
+    // 細小雪花符號，可視需要換成 "•" 或 "✻"
+    span.textContent = '❄';
+
+    const duration = 10 + Math.random() * 8; // 10–18 秒一輪
+    const delay = Math.random() * -duration; // 負 delay 讓雪花一開始就分散
+    const startX = Math.random() * 100; // vw
+    const endX = startX + (Math.random() * 20 - 10); // 左右微飄
+
+    span.style.setProperty('--x-start', startX + 'vw');
+    span.style.setProperty('--x-end', endX + 'vw');
+    span.style.animationDuration = duration + 's';
+    span.style.animationDelay = delay + 's';
+
+    body.appendChild(span);
+  }
+})();
+
 </script>
 </body>
 </html>
