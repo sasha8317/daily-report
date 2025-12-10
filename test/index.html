@@ -62,7 +62,7 @@ h1{ text-align:center; margin:6px 0 2px; font-size:22px; font-weight:700; }
 
   /* ✅ 把帽子拉到白色框外、稍微往上 */
   top:-25px;      /* 往上跑一點，數值越小越高，可再微調 */
-  left:-15px;
+  left:-10px;
   right:auto;  
 
   /* ✅ 帽子再大一點比較像掛在邊緣 */
@@ -75,7 +75,7 @@ h1{ text-align:center; margin:6px 0 2px; font-size:22px; font-weight:700; }
   background-position:center;
 
   /* ✅ 傾斜 45 度 */
-  transform:rotate(-45deg);
+  transform:rotate(-35deg);
 
   /* ✅ 旋轉中心放在「帽子底部附近」，看起來像壓在邊框上 */
   transform-origin:50% 80%;
@@ -195,14 +195,17 @@ button{
   bottom:-12px;
   right:-8px;
 
-  width:36px;
-  height:36px;
+  width:50px;
+  height:50px;
 
   background-image:url("../mistletoe.png"); /* ← 等你上傳後這裡路徑要對 */
   background-size:contain;
   background-repeat:no-repeat;
   background-position:center;
 
+  transform:rotate(45deg);   /* ← 傾斜 45° 在這行 */
+  transform-origin:50% 50%;  /* 可調基準 不加也可 */
+  
   pointer-events:none;
   z-index:8; /* 在卡片上、燈條下、帽子不會擋 */
   opacity:0.95;
