@@ -187,6 +187,27 @@ button{
 .snow span:nth-child(5n)  { animation-duration:18s;}
 .snow span:nth-child(7n)  { width:12px;height:12px;opacity:.6;}
 
+/* 🎄 白色卡片右下角槲寄生裝飾 */
+.section::marker{} /* 避免瀏覽器套樣式，用空白占位 */
+.section .mistletoe{
+  content:"";
+  position:absolute;
+  bottom:-12px;
+  right:-8px;
+
+  width:36px;
+  height:36px;
+
+  background-image:url("../mistletoe.png"); /* ← 等你上傳後這裡路徑要對 */
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+
+  pointer-events:none;
+  z-index:8; /* 在卡片上、燈條下、帽子不會擋 */
+  opacity:0.95;
+}
+
 </style>
 </head>
 
@@ -197,6 +218,7 @@ button{
 <p class="subtitle">輸入數字 → 產生訊息 → 貼到企業微信群組</p>
 
 <div class="section">
+<span class="mistletoe"></span>
 <h2>基本資訊</h2>
 <label>日期： <input type="date" id="date"></label>
 <label>店名： <input type="text" id="store" placeholder="例：站前"></label>
@@ -213,6 +235,7 @@ button{
 </div>
 
 <div class="section">
+<span class="mistletoe"></span>
 <h2>1. 今日外撥</h2>
 <label>潛客外撥通數：<input type="number" id="todayCallPotential" inputmode="numeric" oninput="recalcTotals()"></label>
 <label>過保舊客外撥通數：<input type="number" id="todayCallOld3Y" inputmode="numeric" oninput="recalcTotals()"></label>
@@ -220,11 +243,13 @@ button{
 </div>
 
 <div class="section">
+<span class="mistletoe"></span>
 <h2>2. 今日預約</h2>
 <label>今日預約總數：<input type="number" id="todayBookingTotal" inputmode="numeric"></label>
 </div>
 
 <div class="section">
+<span class="mistletoe"></span>
 <h2>3. 今日到店</h2>
 <label>今日到店總數：<input type="number" id="todayVisitTotal" inputmode="numeric"></label>
 <label>試用 HA：<input type="number" id="trialHA" inputmode="numeric"></label>
@@ -234,11 +259,13 @@ button{
 </div>
 
 <div class="section">
+<span class="mistletoe"></span>
 <h2>4. 明日已排預約</h2>
 <label>明日預約總數：<input type="number" id="tomorrowBookingTotal" inputmode="numeric"></label>
 </div>
 
 <div class="section">
+<span class="mistletoe"></span>
 <h2>5. 明日 KPI</h2>
 <label>外撥目標通數：<input type="number" id="tomorrowKpiCallTotal" inputmode="numeric"></label>
 <label>舊客預約目標 (位)：<input type="number" id="tomorrowKpiCallOld3Y" inputmode="numeric"></label>
