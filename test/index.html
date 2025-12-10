@@ -138,6 +138,40 @@ button{
   color:#fff;
   border:1px solid var(--btn-copy);
 }
+/* =============== ❄ Snow Animation =============== */
+.snow {
+  pointer-events:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden;
+  z-index:-1; /* ❗雪在最底層，不擋畫面 */
+}
+
+.snow span {
+  position:absolute;
+  top:-10px;
+  display:block;
+  width:8px; height:8px;
+  background:rgba(255,255,255,.95);
+  border-radius:50%;
+  animation:snowfall 12s linear infinite;
+  opacity:.9;
+}
+
+/* 🌬 雪花飄落動態 */
+@keyframes snowfall {
+  0% { transform:translateY(-10px) translateX(0); }
+  100% { transform:translateY(110vh) translateX(20px); }
+}
+
+/* ❄ 隨機不同大小/延遲/時間/偏移 */
+.snow span:nth-child(odd) { width:6px;height:6px;animation-duration:10s;opacity:.8;}
+.snow span:nth-child(3n)  { width:10px;height:10px;animation-duration:14s;opacity:.75;}
+.snow span:nth-child(4n)  { animation-delay:3s;transform:translateX(-10px);}
+.snow span:nth-child(5n)  { animation-duration:18s;}
+.snow span:nth-child(7n)  { width:12px;height:12px;opacity:.6;}
+
 </style>
 </head>
 
