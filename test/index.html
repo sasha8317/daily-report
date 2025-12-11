@@ -218,6 +218,12 @@ button{
   opacity:0.95;
 }
 
+/* 🔹 顯示 / 隱藏用 */
+.hidden{
+  display:none;
+}
+
+/* 🔹 Morning Huddle 列排版 */
 .huddle-row{
   display:flex;
   justify-content:space-between;
@@ -235,9 +241,12 @@ button{
   color:#000;
 }
 
-/* 🔹 顯示 / 隱藏用 */
-.hidden{
-  display:none;
+/* 🔹 Morning Huddle 分組分隔線 */
+.huddle-separator{
+  height:1px;
+  background:#ddd;
+  margin:12px 0;
+  opacity:0.7;
 }
 </style>
 </head>
@@ -262,27 +271,31 @@ button{
     已自動帶入昨天填寫的「明日已排預約」與「明日 KPI」。
   </p>
 
+  <!-- 🔹 第一組：與今日預約相關 -->
   <div class="huddle-row">
     <span class="huddle-label">今日預約數</span>
     <span class="huddle-value"><span id="huddleTodayBooking">-</span> 位</span>
   </div>
 
   <div class="huddle-row">
-    <span class="huddle-label">今日外撥目標</span>
+    <span class="huddle-label">邀約試戴目標數</span>
+    <span class="huddle-value"><span id="huddleTodayTrial">-</span> 位</span>
+  </div>
+
+  <!-- 🔹 分隔線：給出視覺上的分組感 -->
+  <div class="huddle-separator"></div>
+
+  <!-- 🔹 第二組：與外撥相關 -->
+  <div class="huddle-row">
+    <span class="huddle-label">今日外撥目標數</span>
     <span class="huddle-value"><span id="huddleTodayCallTotal">-</span> 通</span>
   </div>
 
   <div class="huddle-row">
-    <span class="huddle-label">邀約回店目標</span>
+    <span class="huddle-label">邀約回店目標數</span>
     <span class="huddle-value"><span id="huddleTodayOld3Y">-</span> 位</span>
   </div>
-
-  <div class="huddle-row">
-    <span class="huddle-label">邀約試戴目標</span>
-    <span class="huddle-value"><span id="huddleTodayTrial">-</span> 位</span>
-  </div>
 </section>
-
 
 <!-- 🔹 B. 原本每日回報畫面包成一個區塊 -->
 <div id="report-view">
