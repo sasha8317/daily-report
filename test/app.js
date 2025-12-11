@@ -138,26 +138,6 @@ function recalcTotals() {
   }
 }
 
-// ===== KPI 建議數字 =====
-
-function getSuggestedKpiFromForm() {
-  const BASIC_TARGET = {
-    calls: 15,
-    oldCustomers: 3,
-    trials: 1
-  };
-
-  const todayCalls = getNum("todayCallTotal");
-  const todayOld = getNum("todayBookingTotal"); // 這裡暫時用「今日預約」代表舊客預約需求
-  const todayTrials = getNum("trialHA") + getNum("trialAPAP");
-
-  return {
-    calls: Math.max(BASIC_TARGET.calls, todayCalls),
-    oldCustomers: Math.max(BASIC_TARGET.oldCustomers, todayOld),
-    trials: todayTrials > 0 ? todayTrials : BASIC_TARGET.trials
-  };
-}
-
 // ===== 初始化每日回報資料（自動帶入昨天 / 建議 KPI） =====
 
 function initReportData() {
@@ -196,34 +176,23 @@ function initReportData() {
     tomorrowBookingInput.value = todayData.tomorrowBookingTotal;
   }
 
-  // 5) 明日 KPI：如果還沒填，就幫忙產生建議值
-  const kpiCall = document.getElementById("tomorrowKpiCallTotal");
-  const kpiOld = document.getElementById("tomorrowKpiCallOld3Y");
-  const kpiTrial = document.getElementById("tomorrowKpiTrial");
+// 5) 明日 KPI：只帶出自己之前填過的數字，不自動產生建議
+const kpiCall = document.getElementById("tomorrowKpiCallTotal");
+const kpiOld = document.getElementById("tomorrowKpiCallOld3Y");
+const kpiTrial = document.getElementById("tomorrowKpiTrial");
 
-  const kpiIsEmpty =
-    kpiCall && kpiOld && kpiTrial &&
-    kpiCall.value === "" &&
-    kpiOld.value === "" &&
-    kpiTrial.value === "";
-
-  if (kpiIsEmpty) {
-    const suggestion = getSuggestedKpiFromForm();
-    kpiCall.value = suggestion.calls;
-    kpiOld.value = suggestion.oldCustomers;
-    kpiTrial.value = suggestion.trials;
-  } else if (todayData) {
-    // 如果有存過，照存過的資料顯示
-    if (typeof todayData.tomorrowKpiCallTotal === "number") {
-      kpiCall.value = todayData.tomorrowKpiCallTotal;
-    }
-    if (typeof todayData.tomorrowKpiCallOld3Y === "number") {
-      kpiOld.value = todayData.tomorrowKpiCallOld3Y;
-    }
-    if (typeof todayData.tomorrowKpiTrial === "number") {
-      kpiTrial.value = todayData.tomorrowKpiTrial;
-    }
+if (todayData) {
+  if (kpiCall && typeof todayData.tomorrowKpiCallTotal === "number") {
+    kpiCall.value = todayData.tomorrowKpiCallTotal;
   }
+  if (kpiOld && typeof todayData.tomorrowKpiCallOld3Y === "number") {
+    kpiOld.value = todayData.tomorrowKpiCallOld3Y;
+  }
+  if (kpiTrial && typeof todayData.tomorrowKpiTrial === "number") {
+    kpiTrial.value = todayData.tomorrowKpiTrial;
+  }
+}
+
 }
 
 // ===== Morning Huddle 初始化（從昨天的「明日」帶到今天） =====
