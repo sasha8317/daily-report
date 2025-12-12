@@ -79,6 +79,7 @@ function applyDataToForm(data) {
   setInputValue("todayCallPotential", data.todayCallPotential);
   setInputValue("todayCallOld3Y", data.todayCallOld3Y);
   setInputValue("todayCallTotal", data.todayCallTotal);
+  setInputValue("todayInviteReturn", data.todayInviteReturn);
   setInputValue("todayBookingTotal", data.todayBookingTotal);
   setInputValue("todayVisitTotal", data.todayVisitTotal);
   setInputValue("trialHA", data.trialHA);
@@ -106,6 +107,7 @@ function collectTodayFormData() {
   data.todayCallPotential = getNum("todayCallPotential");
   data.todayCallOld3Y = getNum("todayCallOld3Y");
   data.todayCallTotal = getNum("todayCallTotal");
+  data.todayInviteReturn = getNum("todayInviteReturn");
   data.todayBookingTotal = getNum("todayBookingTotal");
   data.todayVisitTotal = getNum("todayVisitTotal");
   data.trialHA = getNum("trialHA");
