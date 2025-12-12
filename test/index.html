@@ -328,6 +328,11 @@ button{
   <span class="mistletoe"></span>
   <h2>2. 今日預約</h2>
   <label>今日預約總數：<input type="number" id="todayBookingTotal" inputmode="numeric"></label>
+
+  <!-- 🔹 自動帶入提示（預設隱藏） -->
+  <div id="todayBookingHint" style="font-size:12px;color:#666;margin-top:4px;display:none;">
+    （已帶入昨日明日預約：<span id="todayBookingHintValue"></span> 位）
+  </div>
   </div>
 
   <div class="section">
