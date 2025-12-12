@@ -1,5 +1,9 @@
 console.log("✅ test app.js loaded");
 
+// ✅ Power Automate（HTTP Trigger）URL：把你貼的 URL 放在這裡
+const FLOW_API_URL =
+  "https://default6001594ba4a44549a0e1abb0cd4cc0.45.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ce8547d0ef7541ac8fc7d3f1df9c73ff/triggers/manual/paths/invoke?api-version=1";
+
 // 專門給 test 版用的儲存前綴
 const STORAGE_PREFIX = "daily-report-test-";
 
@@ -38,13 +42,18 @@ function loadReport(dateStr) {
     const raw = localStorage.getItem(getStorageKey(dateStr));
     if (!raw) return null;
     return JSON.parse(raw);
-  } catch {
+  } catch (e) {
+    console.warn("loadReport 解析失敗", e);
     return null;
   }
 }
 
 function saveReport(dateStr, data) {
-  localStorage.setItem(getStorageKey(dateStr), JSON.stringify(data));
+  try {
+    localStorage.setItem(getStorageKey(dateStr), JSON.stringify(data));
+  } catch (e) {
+    console.warn("saveReport 失敗", e);
+  }
 }
 
 // ===== 表單工具 =====
@@ -107,6 +116,35 @@ function collectTodayFormData() {
     tomorrowKpiCallOld3Y: getNum("tomorrowKpiCallOld3Y"),
     tomorrowKpiTrial: getNum("tomorrowKpiTrial")
   };
+}
+
+// ===== ✅ 送資料到 OneDrive（Power Automate HTTP Trigger） =====
+
+async function sendReportToOneDrive(data) {
+  if (!FLOW_API_URL) return;
+
+  try {
+    const payload = {
+      ...data,
+      created_at: new Date().toISOString(),
+      source: "test-index"
+    };
+
+    const res = await fetch(FLOW_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    // Power Automate 有時回 202 / 200 都算成功，這裡只做紀錄
+    if (!res.ok) {
+      console.warn("⚠️ 已送出但回應非 2xx", res.status);
+    } else {
+      console.log("✅ 已送出到 OneDrive");
+    }
+  } catch (err) {
+    console.error("❌ 送出到 OneDrive 失敗", err);
+  }
 }
 
 // ===== 計算 =====
@@ -172,20 +210,18 @@ function initMorningHuddle() {
   if (typeof yesterdayData.tomorrowKpiTrial === "number")
     document.getElementById("huddleTodayTrial").textContent = yesterdayData.tomorrowKpiTrial;
 
-  // ===== 昨日執行檢視 =====
+  // ===== 昨日執行檢視（顯示：目標 X / 執行 Y ✔/✖）=====
 
   function renderCheck(id, actual, target) {
-  const el = document.getElementById(id);
-  if (!el || target === 0) return;
+    const el = document.getElementById(id);
+    if (!el) return;
 
-  const diff = actual - target;
-  const ok = diff >= 0;
+    const a = Number(actual) || 0;
+    const t = Number(target) || 0;
+    const ok = a >= t;
 
-  el.textContent =
-    `目標 ${target} / 執行 ${actual}　` +
-    `${ok ? "✔ 達成" : "✖ 未達成"}`;
-}
-
+    el.textContent = `目標 ${t} / 執行 ${a}　${ok ? "✔ 達成" : "✖ 未達成"}`;
+  }
 
   renderCheck(
     "checkTrialText",
@@ -212,12 +248,17 @@ function initMorningHuddle() {
   const calls = yesterdayData.todayCallTotal || 0;
   const invites = yesterdayData.todayInviteReturn || 0;
 
-  if (calls > 0) {
-    const rate = Math.round((invites / calls) * 100);
-    rateText.textContent = `${rate}%`;
-    badge.style.display = "inline-block";
-    badge.className = "badge " + (rate >= 20 ? "green" : rate >= 10 ? "yellow" : "red");
-    badge.textContent = rate >= 20 ? "高" : rate >= 10 ? "中" : "低";
+  if (rateText && badge) {
+    if (calls > 0) {
+      const rate = Math.round((invites / calls) * 100);
+      rateText.textContent = `${rate}%`;
+      badge.style.display = "inline-block";
+      badge.className = "badge " + (rate >= 20 ? "green" : rate >= 10 ? "yellow" : "red");
+      badge.textContent = rate >= 20 ? "高" : rate >= 10 ? "中" : "低";
+    } else {
+      rateText.textContent = `-`;
+      badge.style.display = "none";
+    }
   }
 }
 
@@ -226,13 +267,17 @@ function initMorningHuddle() {
 function generateMessage() {
   recalcTotals();
   const today = getCurrentDateStr();
-  saveReport(today, collectTodayFormData());
+  const data = collectTodayFormData();
+  saveReport(today, data);
 
-  const d = document.getElementById("date").value.replace(/-/g, "/");
-  const s = document.getElementById("store").value || "門市";
-  const n = document.getElementById("name").value || "姓名";
+  const d = (document.getElementById("date")?.value || "").replace(/-/g, "/");
+  const s = document.getElementById("store")?.value || "門市";
+  const n = document.getElementById("name")?.value || "姓名";
 
-  document.getElementById("output").value =
+  const output = document.getElementById("output");
+  if (!output) return;
+
+  output.value =
 `${d}｜${s} ${n}
 1. 今日外撥：${getNum("todayCallTotal")} 通（潛在 ${getNum("todayCallPotential")} 通、過保舊客 ${getNum("todayCallOld3Y")} 通）
 2. 今日預約：${getNum("todayBookingTotal")} 位
@@ -246,10 +291,24 @@ function generateMessage() {
    完成試戴 ${getNum("tomorrowKpiTrial")} 位`;
 }
 
-// ===== 複製 =====
+// ===== 複製（✅ 同步送 OneDrive，不增加同仁步驟）=====
 
 function copyMessage() {
+  // 先確保總外撥是最新的
+  recalcTotals();
+
+  // ✅ 先存 localStorage（照舊）
+  const today = getCurrentDateStr();
+  const data = collectTodayFormData();
+  saveReport(today, data);
+
+  // ✅ 同步送到 OneDrive（Power Automate）
+  // 不擋住複製流程：送出失敗也不影響同仁操作
+  sendReportToOneDrive(data);
+
   const o = document.getElementById("output");
+  if (!o) return;
+
   o.select();
   document.execCommand("copy");
   alert("已複製，前往企業微信貼上即可！");
@@ -262,6 +321,7 @@ function setupTabs() {
   const r = document.getElementById("tab-report");
   const hv = document.getElementById("huddle-view");
   const rv = document.getElementById("report-view");
+  if (!h || !r || !hv || !rv) return;
 
   h.onclick = () => {
     hv.classList.remove("hidden");
