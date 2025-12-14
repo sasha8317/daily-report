@@ -219,9 +219,7 @@ button{
 }
 
 /* 🔹 顯示 / 隱藏用 */
-.hidden{
-  display:none;
-}
+.hidden{ display:none; }
 
 /* 🔹 Morning Huddle 列排版 */
 .huddle-row{
@@ -231,11 +229,8 @@ button{
   margin-top:8px;
   font-size:14px;
 }
-
 .huddle-label{ color:#333; }
 .huddle-value{ font-weight:600; color:#000; }
-
-/* 🔹 Morning Huddle 分組分隔線 */
 .huddle-separator{
   height:1px;
   background:#ddd;
@@ -294,10 +289,9 @@ button{
   <span class="mistletoe"></span>
   <h2>今日目標</h2>
   <p style="font-size:13px;color:#555;margin-top:4px;">
-    已自動帶入昨天填寫的「明日已排預約」與「明日 KPI」。
+    已自動帶入前一次有填寫的「明日已排預約」與「明日 KPI」。
   </p>
 
-  <!-- 🔹 第一組：與今日預約相關 -->
   <div class="huddle-row">
     <span class="huddle-label">今日預約數</span>
     <span class="huddle-value"><span id="huddleTodayBooking">-</span> 位</span>
@@ -310,7 +304,6 @@ button{
 
   <div class="huddle-separator"></div>
 
-  <!-- 🔹 第二組：與外撥相關 -->
   <div class="huddle-row">
     <span class="huddle-label">今日外撥目標數</span>
     <span class="huddle-value"><span id="huddleTodayCallTotal">-</span> 通</span>
@@ -321,12 +314,11 @@ button{
     <span class="huddle-value"><span id="huddleTodayOld3Y">-</span> 位</span>
   </div>
 
-  <!-- ✅ 新增：昨日執行檢視 -->
   <div class="huddle-separator"></div>
 
   <h2 style="margin-top:0;">昨日執行檢視</h2>
   <p style="font-size:13px;color:#555;margin-top:4px;">
-    以「前天設定的 KPI」對照「昨天實際回報」。
+    以「前一次設定的 KPI」對照「前一次回報實績」（會自動跳過休假）。
   </p>
 
   <div class="check-row">
@@ -353,81 +345,78 @@ button{
   </div>
 </section>
 
-<!-- 🔹 B. 原本每日回報畫面包成一個區塊 -->
+<!-- 🔹 B. 每日回報 -->
 <div id="report-view">
   <div class="section">
-  <span class="mistletoe"></span>
-  <h2>基本資訊</h2>
-  <label>日期： <input type="date" id="date"></label>
-  <label>店名： <input type="text" id="store" placeholder="例：站前"></label>
-  <label>姓名：
-  <select id="name">
-  <option value="">請選擇同仁姓名</option>
-  <option>郭孟鑫</option><option>陳詩潔</option><option>游瑟焄</option>
-  <option>魏頎恩</option><option>李孟馨</option><option>劉瑋婷</option>
-  <option>林瑀婕</option><option>周曉玄</option><option>蕭純聿</option>
-  <option>陳宛妤</option><option>王靖雅</option><option>林寓葳</option>
-  <option>吳欣珮</option><option>呂桂梅</option><option>蔡秉忻</option>
-  </select>
-  </label>
+    <span class="mistletoe"></span>
+    <h2>基本資訊</h2>
+    <label>日期： <input type="date" id="date"></label>
+    <label>店名： <input type="text" id="store" placeholder="例：站前"></label>
+    <label>姓名：
+      <select id="name">
+        <option value="">請選擇同仁姓名</option>
+        <option>郭孟鑫</option><option>陳詩潔</option><option>游瑟焄</option>
+        <option>魏頎恩</option><option>李孟馨</option><option>劉瑋婷</option>
+        <option>林瑀婕</option><option>周曉玄</option><option>蕭純聿</option>
+        <option>陳宛妤</option><option>王靖雅</option><option>林寓葳</option>
+        <option>吳欣珮</option><option>呂桂梅</option>
+      </select>
+    </label>
   </div>
 
   <div class="section">
-  <span class="mistletoe"></span>
-  <h2>1. 今日外撥</h2>
-  <label>潛客外撥通數：<input type="number" id="todayCallPotential" inputmode="numeric" oninput="recalcTotals()"></label>
-  <label>過保舊客外撥通數：<input type="number" id="todayCallOld3Y" inputmode="numeric" oninput="recalcTotals()"></label>
-  <label>今日外撥總通數：<input type="number" id="todayCallTotal" readonly></label>
-  <!-- ✅ 新增（不會出現在產生訊息中） -->
-  <label>成功邀約回店人數：<input type="number" id="todayInviteReturn" inputmode="numeric"></label>
+    <span class="mistletoe"></span>
+    <h2>1. 今日外撥</h2>
+    <label>潛客外撥通數：<input type="number" id="todayCallPotential" inputmode="numeric" oninput="recalcTotals()"></label>
+    <label>過保舊客外撥通數：<input type="number" id="todayCallOld3Y" inputmode="numeric" oninput="recalcTotals()"></label>
+    <label>今日外撥總通數：<input type="number" id="todayCallTotal" readonly></label>
+    <label>成功邀約回店人數：<input type="number" id="todayInviteReturn" inputmode="numeric"></label>
   </div>
 
   <div class="section">
-  <span class="mistletoe"></span>
-  <h2>2. 今日預約</h2>
-  <label>今日預約總數：<input type="number" id="todayBookingTotal" inputmode="numeric"></label>
-
-  <!-- 🔹 自動帶入提示（預設隱藏） -->
-  <div id="todayBookingHint" style="font-size:12px;color:#666;margin-top:4px;display:none;">
-    （已帶入昨日填寫的「明日已排預約」：<span id="todayBookingHintValue"></span> 位）
-  </div>
+    <span class="mistletoe"></span>
+    <h2>2. 今日預約</h2>
+    <label>今日預約總數：<input type="number" id="todayBookingTotal" inputmode="numeric"></label>
+    <div id="todayBookingHint" style="font-size:12px;color:#666;margin-top:4px;display:none;">
+      （已帶入前一次填寫的「明日已排預約」：<span id="todayBookingHintValue"></span> 位）
+    </div>
   </div>
 
   <div class="section">
-  <span class="mistletoe"></span>
-  <h2>3. 今日到店</h2>
-  <label>今日到店總數：<input type="number" id="todayVisitTotal" inputmode="numeric"></label>
-  <label>試用 HA：<input type="number" id="trialHA" inputmode="numeric"></label>
-  <label>試用 APAP：<input type="number" id="trialAPAP" inputmode="numeric"></label>
-  <label>成交 HA：<input type="number" id="dealHA" inputmode="numeric"></label>
-  <label>成交 APAP：<input type="number" id="dealAPAP" inputmode="numeric"></label>
+    <span class="mistletoe"></span>
+    <h2>3. 今日到店</h2>
+    <label>今日到店總數：<input type="number" id="todayVisitTotal" inputmode="numeric"></label>
+    <label>試用 HA：<input type="number" id="trialHA" inputmode="numeric"></label>
+    <label>試用 APAP：<input type="number" id="trialAPAP" inputmode="numeric"></label>
+    <label>成交 HA：<input type="number" id="dealHA" inputmode="numeric"></label>
+    <label>成交 APAP：<input type="number" id="dealAPAP" inputmode="numeric"></label>
   </div>
 
   <div class="section">
-  <span class="mistletoe"></span>
-  <h2>4. 明日已排預約</h2>
-  <label>明日預約總數：<input type="number" id="tomorrowBookingTotal" inputmode="numeric"></label>
+    <span class="mistletoe"></span>
+    <h2>4. 明日已排預約</h2>
+    <label>明日預約總數：<input type="number" id="tomorrowBookingTotal" inputmode="numeric"></label>
   </div>
 
   <div class="section">
-  <span class="mistletoe"></span>
-  <h2>5. 明日 KPI</h2>
-  <label>外撥目標通數：<input type="number" id="tomorrowKpiCallTotal" inputmode="numeric"></label>
-  <label>邀約回店目標數 (位)：<input type="number" id="tomorrowKpiCallOld3Y" inputmode="numeric"></label>
-  <label>完成HA/APAP試戴目標 (位)：<input type="number" id="tomorrowKpiTrial" inputmode="numeric"></label>
+    <span class="mistletoe"></span>
+    <h2>5. 明日 KPI</h2>
+    <label>外撥目標通數：<input type="number" id="tomorrowKpiCallTotal" inputmode="numeric"></label>
+    <label>邀約回店目標數 (位)：<input type="number" id="tomorrowKpiCallOld3Y" inputmode="numeric"></label>
+    <label>完成HA/APAP試戴目標 (位)：<input type="number" id="tomorrowKpiTrial" inputmode="numeric"></label>
   </div>
 
   <div class="section">
-  <span class="mistletoe"></span>
-  <textarea id="output" placeholder="按下『產生訊息』後文字會出現在這裡"></textarea>
+    <span class="mistletoe"></span>
+    <textarea id="output" placeholder="按下『產生訊息』後文字會出現在這裡"></textarea>
   </div>
 </div><!-- /#report-view -->
 
 </div><!-- /.container -->
 
 <div class="actions">
-<button class="btn-primary" onclick="generateMessage()">⛄️ 產生訊息</button>
-<button class="btn-secondary" onclick="copyMessage()">☃️ 複製文字</button>
+  <button class="btn-primary" onclick="generateMessage()">⛄️ 產生訊息</button>
+  <button class="btn-secondary" onclick="copyMessage()">☃️ 複製文字</button>
 </div>
 
 <!-- ❄ Snow Layer -->
@@ -442,8 +431,8 @@ button{
   <span></span><span></span><span></span><span></span><span></span>
 </div>
 
-<!-- 🔹 外部 app.js -->
-<script src="./app.js?v=9"></script>
+<!-- 🔹 正式版 app.js -->
+<script src="app.js?v=1"></script>
 
 </body>
 </html>
