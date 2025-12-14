@@ -57,16 +57,18 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2️⃣ 其他靜態資源：cache-first（先用快取，沒有再抓網路）
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(req).then((response) => {
+// 2️⃣ 其他靜態資源：stale-while-revalidate（先用快取，同時背景更新）
+event.respondWith(
+  caches.match(req).then((cached) => {
+    const network = fetch(req)
+      .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
         return response;
-      });
-    })
-  );
-});
+      })
+      .catch(() => cached);
+
+    // 有快取就先回快取（速度快），同時讓 network 去更新快取
+    return cached || network;
+  })
+);
