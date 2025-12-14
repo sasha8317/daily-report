@@ -193,22 +193,29 @@ function renderHuddle() {
   const actualCall = n(ydData?.todayCallPotential) + n(ydData?.todayCallOld3Y);
   const actualInvite = n(ydData?.todayInviteReturn);
 
+  function statusText(ok) {
+    return ok ? `✔ 達成` : `✘ 未達成`;
+  }
+
+  // 試戴數
   if ($("checkTrialText")) {
-    const ok = actualTrial >= targetTrial && targetTrial > 0 ? true : (targetTrial === 0 ? true : actualTrial >= targetTrial);
-    $("checkTrialText").innerHTML = `${actualTrial} / ${targetTrial} ${badgeText(ok)}`;
+    const ok = actualTrial >= targetTrial;
+    $("checkTrialText").textContent = `目標 ${targetTrial} / 執行 ${actualTrial}  ${statusText(ok)}`;
   }
 
+  // 外撥通數
   if ($("checkCallText")) {
-    const ok = actualCall >= targetCall && targetCall > 0 ? true : (targetCall === 0 ? true : actualCall >= targetCall);
-    $("checkCallText").innerHTML = `${actualCall} / ${targetCall} ${badgeText(ok)}`;
+    const ok = actualCall >= targetCall;
+    $("checkCallText").textContent = `目標 ${targetCall} / 執行 ${actualCall}  ${statusText(ok)}`;
   }
 
+  // 邀約回店數
   if ($("checkInviteText")) {
-    const ok = actualInvite >= targetInvite && targetInvite > 0 ? true : (targetInvite === 0 ? true : actualInvite >= targetInvite);
-    $("checkInviteText").innerHTML = `${actualInvite} / ${targetInvite} ${badgeText(ok)}`;
+    const ok = actualInvite >= targetInvite;
+    $("checkInviteText").textContent = `目標 ${targetInvite} / 執行 ${actualInvite}  ${statusText(ok)}`;
   }
 
-  // 邀約成功率：invite / call
+  // 邀約成功率：invite / call（維持你原本右側 badge 的設計）
   const rate = actualCall > 0 ? (actualInvite / actualCall) : 0;
   const pct = (rate * 100).toFixed(0) + "%";
   if ($("checkInviteRateText")) $("checkInviteRateText").textContent = pct;
@@ -218,7 +225,7 @@ function renderHuddle() {
     badge.style.display = "inline-block";
     badge.classList.remove("green", "yellow", "red");
 
-    // 你可以自行調門檻：>=30% 綠、>=15% 黃、其他紅
+    // 你截圖是「20% 高」這種感覺：我做成 3 段文字（高 / 中 / 低）
     if (rate >= 0.30) { badge.classList.add("green"); badge.textContent = "高"; }
     else if (rate >= 0.15) { badge.classList.add("yellow"); badge.textContent = "中"; }
     else { badge.classList.add("red"); badge.textContent = "低"; }
