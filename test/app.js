@@ -234,28 +234,28 @@ function renderHuddle() {
 
 // ===== 產生訊息（含達成/未達成段落） =====
 function generateMessage() {
-  saveToday(); // 先存起來，避免漏
+  saveToday(); // 先存，避免漏資料
 
   const d = collectForm();
-  const date = d.date;
-  const title = `${date}｜${d.store || "-"} ${d.name || ""}`.trim();
 
-  const msg = [
-    title,
-    `1. 今日外撥：${d.todayCallTotal} 通（潛在 ${d.todayCallPotential} 通、過保舊客 ${d.todayCallOld3Y} 通）`,
-    `2. 今日預約：${d.todayBookingTotal} 位`,
-    `3. 今日到店：${d.todayVisitTotal} 位`,
-    `   試用：HA ${d.trialHA} 位、APAP ${d.trialAPAP} 位`,
-    `   成交：HA ${d.dealHA} 位、APAP ${d.dealAPAP} 位`,
-    `4. 明日已排預約：${d.tomorrowBookingTotal} 位`,
-    `5. 明日KPI:`,
-    `   外撥 ${d.tomorrowKpiCallTotal} 通`,
-    `   舊客預約 ${d.tomorrowKpiCallOld3Y} 位`,
-    `   完成試戴 ${d.tomorrowKpiTrial} 位`,
-    ``,
-    `【昨日執行檢視（達成/未達成）】`,
-    buildYesterdayCheckText(date),
-  ].join("\n");
+  const title = `${d.date}｜${d.store || ""} ${d.name || ""}`.trim();
+
+  const msg =
+`${title}
+1. 今日外撥：${d.todayCallTotal} 通（潛客 ${d.todayCallPotential} 通、過保舊客 ${d.todayCallOld3Y} 通）
+2. 今日預約：${d.todayBookingTotal} 位
+3. 今日到店：${d.todayVisitTotal} 位
+   試用：HA ${d.trialHA} 位、APAP ${d.trialAPAP} 位
+   成交：HA ${d.dealHA} 位、APAP ${d.dealAPAP} 位
+4. 明日已排預約：${d.tomorrowBookingTotal} 位
+5. 明日KPI：
+   完成試戴 ${d.tomorrowKpiTrial} 位
+   外撥 ${d.tomorrowKpiCallTotal} 通
+   舊客預約 ${d.tomorrowKpiCallOld3Y} 位
+
+📊 今日執行檢視（對照昨日 KPI）
+${buildYesterdayCheckText(d.date)}
+`;
 
   if ($("output")) $("output").value = msg;
 }
@@ -265,35 +265,39 @@ function buildYesterdayCheckText(todayStr) {
   const yesterday = addDaysToDateStr(todayStr, -1);
   const dayBeforeYesterday = addDaysToDateStr(todayStr, -2);
 
-  const yd = loadByDate(yesterday);           // 昨天實績
-  const dby = loadByDate(dayBeforeYesterday); // 前天設定（= 昨天目標）
+  // 昨天實績
+  const yd = loadByDate(yesterday);
+  // 前天設定的「明日KPI」= 昨天的 KPI
+  const dby = loadByDate(dayBeforeYesterday);
 
   if (!yd || !dby) {
-    return "（找不到昨日實績或前日KPI資料，請確認前天有填寫「明日KPI」，且昨天有填寫回報。）";
+    return "•（找不到昨日實績或前日 KPI，請確認前天有填「明日KPI」，且昨天有填回報）";
   }
 
+  // KPI 目標（取前天的明日KPI）
   const targetTrial = n(dby.tomorrowKpiTrial);
-  const targetCall = n(dby.tomorrowKpiCallTotal);
+  const targetCall  = n(dby.tomorrowKpiCallTotal);
   const targetInvite = n(dby.tomorrowKpiCallOld3Y);
 
+  // 昨天實績（取昨天回報）
   const actualTrial = n(yd.trialHA) + n(yd.trialAPAP);
-  const actualCall = n(yd.todayCallPotential) + n(yd.todayCallOld3Y);
+  const actualCall  = n(yd.todayCallPotential) + n(yd.todayCallOld3Y); // 或 yd.todayCallTotal 也行
   const actualInvite = n(yd.todayInviteReturn);
 
-  const okTrial = actualTrial >= targetTrial;
-  const okCall = actualCall >= targetCall;
-  const okInvite = actualInvite >= targetInvite;
+  const okText = (ok) => (ok ? "✓ 達成" : "✘ 未達成");
 
+  // 邀約成功率
   const rate = actualCall > 0 ? (actualInvite / actualCall) : 0;
-  const pct = (rate * 100).toFixed(0) + "%";
+  const pct = Math.round(rate * 100) + "%";
 
   return [
-    `- 試戴：${actualTrial} / ${targetTrial}（${okTrial ? "達成" : "未達成"}）`,
-    `- 外撥：${actualCall} / ${targetCall}（${okCall ? "達成" : "未達成"}）`,
-    `- 邀約回店：${actualInvite} / ${targetInvite}（${okInvite ? "達成" : "未達成"}）`,
-    `- 邀約成功率：${pct}`,
+    `• 試戴數：目標 ${targetTrial} / 執行 ${actualTrial}   ${okText(actualTrial >= targetTrial)}`,
+    `• 外撥通數：目標 ${targetCall} / 執行 ${actualCall}   ${okText(actualCall >= targetCall)}`,
+    `• 邀約回店數：目標 ${targetInvite} / 執行 ${actualInvite}   ${okText(actualInvite >= targetInvite)}`,
+    `• 邀約成功率：${pct}`,
   ].join("\n");
 }
+
 
 // ===== 複製 =====
 async function copyMessage() {
