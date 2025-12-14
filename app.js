@@ -3,6 +3,13 @@ console.log("✅ official app.js loaded");
 // ✅ 正式版儲存前綴（避免跟測試版混在一起）
 const STORAGE_PREFIX = "daily-report-";
 
+/** =========================
+ *  ✅ B方案：寫入 Google Sheets 的設定
+ *  你只要改這兩個
+ *  ========================= */
+const SHEET_INGEST_URL = "https://script.google.com/macros/s/AKfycbxwYN_YGa5W8Fqg8YrSPTFkhkqnLB61hZ3lFgU-5kIHTSK_DmasH573pv7GutF8wf8S/exec";
+const INGEST_KEY = "dailyreport-key-2025"; // 要跟 Apps Script 端一致
+
 // ===== 日期工具 =====
 
 function getCurrentDateStr() {
@@ -45,6 +52,69 @@ function loadReport(dateStr) {
 
 function saveReport(dateStr, data) {
   localStorage.setItem(getStorageKey(dateStr), JSON.stringify(data));
+}
+
+/** =========================
+ *  ✅ 防止重複送出（同一天同內容就不再送）
+ *  ========================= */
+function getSentKey(dateStr) {
+  return STORAGE_PREFIX + "sent-" + dateStr;
+}
+
+function simpleHash(str) {
+  // 非加密，只是用來判斷「內容有沒有變」
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (h << 5) - h + str.charCodeAt(i);
+    h |= 0;
+  }
+  return String(h);
+}
+
+function getLastSentInfo(dateStr) {
+  try {
+    const raw = localStorage.getItem(getSentKey(dateStr));
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function markSent(dateStr, msgText) {
+  const info = {
+    sentAt: new Date().toISOString(),
+    msgHash: simpleHash(msgText || "")
+  };
+  localStorage.setItem(getSentKey(dateStr), JSON.stringify(info));
+}
+
+/** =========================
+ *  ✅ 寫入 Google Sheets（Apps Script Web App）
+ *  ========================= */
+async function sendReportToSheet(payload) {
+  if (!SHEET_INGEST_URL || SHEET_INGEST_URL.includes("請貼上")) {
+    console.warn("⚠️ SHEET_INGEST_URL 尚未設定，略過送出到 Google Sheets");
+    return { ok: false, skipped: true };
+  }
+
+  const res = await fetch(SHEET_INGEST_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key: INGEST_KEY, ...payload })
+  });
+
+  let data = {};
+  try {
+    data = await res.json();
+  } catch {
+    // ignore
+  }
+
+  if (!res.ok || data.ok !== true) {
+    throw new Error(data.error || "sendReportToSheet failed");
+  }
+  return { ok: true };
 }
 
 // ===== 表單工具 =====
@@ -226,9 +296,9 @@ function initMorningHuddle() {
   }
 }
 
-// ===== ✅ 產生訊息（加入：成功邀約回店 + 今日執行檢視(對照昨日KPI)） =====
+// ===== ✅ 產生訊息（加入：成功邀約回店 + 今日執行檢視(對照昨日KPI) + ✅送到Google Sheets）=====
 
-function generateMessage() {
+async function generateMessage() {
   recalcTotals();
 
   const today = getCurrentDateStr();
@@ -296,6 +366,51 @@ ${rateLine}`;
 　舊客預約 ${getNum("tomorrowKpiCallOld3Y")} 位${checkBlock ? "\n" + checkBlock : ""}`;
 
   document.getElementById("output").value = msg;
+
+  /** =========================
+   *  ✅ 送到 Google Sheets（集中資料）
+   *  - 同一天同內容就不重送
+   *  ========================= */
+  try {
+    const last = getLastSentInfo(today);
+    const currentHash = simpleHash(msg);
+    if (last && last.msgHash === currentHash) {
+      console.log("ℹ️ 已送出過相同內容，略過重複送出到 Google Sheets");
+      return;
+    }
+
+    const payload = {
+      date: todayData.date,
+      store: todayData.store,
+      name: todayData.name,
+
+      calls_total: todayData.todayCallTotal,
+      calls_potential: todayData.todayCallPotential,
+      calls_old: todayData.todayCallOld3Y,
+
+      appt_today: todayData.todayBookingTotal,
+      visit_today: todayData.todayVisitTotal,
+
+      trial_ha: todayData.trialHA,
+      trial_apap: todayData.trialAPAP,
+      deal_ha: todayData.dealHA,
+      deal_apap: todayData.dealAPAP,
+
+      appt_tomorrow: todayData.tomorrowBookingTotal,
+      kpi_call_tomorrow: todayData.tomorrowKpiCallTotal,
+      kpi_old_appt_tomorrow: todayData.tomorrowKpiCallOld3Y,
+      kpi_trial_tomorrow: todayData.tomorrowKpiTrial,
+
+      message_text: msg
+    };
+
+    await sendReportToSheet(payload);
+    markSent(today, msg);
+    console.log("✅ 已送出到 Google Sheets");
+  } catch (err) {
+    console.error("❌ 送出到 Google Sheets 失敗：", err);
+    alert("⚠️ 已產生訊息，但同步到督導 Dashboard 失敗。\n請確認網路、或通知督導協助檢查設定。");
+  }
 }
 
 // ===== 複製 =====
