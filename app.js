@@ -30,21 +30,23 @@ function storageKey(dateStr) {
   return `${STORAGE_PREFIX}${dateStr}`;
 }
 
+// ✅ 關鍵修正：空白就回傳空白，不再強制變 0
 function n(v) {
-  const x = Number(String(v ?? "").trim());
-  return Number.isFinite(x) ? x : 0;
+  if (v === "" || v === null || v === undefined) return "";
+  const x = Number(String(v).trim());
+  return Number.isFinite(x) ? x : "";
 }
 
 function $(id) {
   return document.getElementById(id);
 }
 
-// ✅ 符號＋文字統一（全站唯一來源）
+// ✅ 符號＋文字統一
 function okText(ok) {
   return ok ? "✔️ 達成" : "✖️ 未達成";
 }
 
-// ===== 儲存/讀取 =====
+// ===== 儲存 / 讀取 =====
 function saveToday() {
   const date = getCurrentDateStr();
   const payload = collectForm();
@@ -79,7 +81,7 @@ function getPrevTwoDataDates(todayStr) {
   return { d1, d0 };
 }
 
-// 取得「昨日KPI來源日」：優先昨天，沒有就回退到最近一次有資料
+// 取得「昨日KPI來源日」
 function getKpiSourceDateForToday(todayStr) {
   const yesterday = addDaysToDateStr(todayStr, -1);
   if (hasDataOnDate(yesterday)) return yesterday;
@@ -95,23 +97,18 @@ function collectForm() {
     store: $("store")?.value?.trim() || "",
     name: $("name")?.value?.trim() || "",
 
-    // 今日外撥
     todayCallPotential: n($("todayCallPotential")?.value),
     todayCallOld3Y: n($("todayCallOld3Y")?.value),
-    todayCallTotal: n($("todayCallTotal")?.value),
     todayInviteReturn: n($("todayInviteReturn")?.value),
 
-    // 今日預約/到店
     todayBookingTotal: n($("todayBookingTotal")?.value),
     todayVisitTotal: n($("todayVisitTotal")?.value),
 
-    // 試用/成交
     trialHA: n($("trialHA")?.value),
     trialAPAP: n($("trialAPAP")?.value),
     dealHA: n($("dealHA")?.value),
     dealAPAP: n($("dealAPAP")?.value),
 
-    // 明日
     tomorrowBookingTotal: n($("tomorrowBookingTotal")?.value),
     tomorrowKpiCallTotal: n($("tomorrowKpiCallTotal")?.value),
     tomorrowKpiCallOld3Y: n($("tomorrowKpiCallOld3Y")?.value),
@@ -120,44 +117,41 @@ function collectForm() {
     updatedAt: new Date().toISOString(),
   };
 
-  // 保險：總通數重新算一次
-  obj.todayCallTotal = obj.todayCallPotential + obj.todayCallOld3Y;
+  // 保險：總通數重新算一次（只用來產生訊息與計算）
+  obj.todayCallTotal =
+    (Number(obj.todayCallPotential) || 0) +
+    (Number(obj.todayCallOld3Y) || 0);
 
   return obj;
 }
 
-// ===== 寫回表單 =====
+// ===== 寫回表單（0 不回填畫面）=====
 function fillForm(data) {
   if (!data) return;
 
-  if ($("store")) $("store").value = data.store ?? "";
-  if ($("name")) $("name").value = data.name ?? "";
+  Object.entries(data).forEach(([k, v]) => {
+    const el = $(k);
+    if (!el) return;
+    el.value = v === 0 ? "" : (v ?? "");
+  });
 
-  if ($("todayCallPotential")) $("todayCallPotential").value = data.todayCallPotential ?? "";
-  if ($("todayCallOld3Y")) $("todayCallOld3Y").value = data.todayCallOld3Y ?? "";
   recalcTotals();
-
-  if ($("todayInviteReturn")) $("todayInviteReturn").value = data.todayInviteReturn ?? "";
-
-  if ($("todayBookingTotal")) $("todayBookingTotal").value = data.todayBookingTotal ?? "";
-  if ($("todayVisitTotal")) $("todayVisitTotal").value = data.todayVisitTotal ?? "";
-
-  if ($("trialHA")) $("trialHA").value = data.trialHA ?? "";
-  if ($("trialAPAP")) $("trialAPAP").value = data.trialAPAP ?? "";
-  if ($("dealHA")) $("dealHA").value = data.dealHA ?? "";
-  if ($("dealAPAP")) $("dealAPAP").value = data.dealAPAP ?? "";
-
-  if ($("tomorrowBookingTotal")) $("tomorrowBookingTotal").value = data.tomorrowBookingTotal ?? "";
-  if ($("tomorrowKpiCallTotal")) $("tomorrowKpiCallTotal").value = data.tomorrowKpiCallTotal ?? "";
-  if ($("tomorrowKpiCallOld3Y")) $("tomorrowKpiCallOld3Y").value = data.tomorrowKpiCallOld3Y ?? "";
-  if ($("tomorrowKpiTrial")) $("tomorrowKpiTrial").value = data.tomorrowKpiTrial ?? "";
 }
 
-// ===== 計算外撥總通數 =====
+// ===== 計算外撥總通數（避免顯示 0）=====
 function recalcTotals() {
-  const p = n($("todayCallPotential")?.value);
-  const o = n($("todayCallOld3Y")?.value);
-  if ($("todayCallTotal")) $("todayCallTotal").value = p + o;
+  const pRaw = $("todayCallPotential")?.value;
+  const oRaw = $("todayCallOld3Y")?.value;
+  const totalEl = $("todayCallTotal");
+
+  if (!totalEl) return;
+
+  if ((pRaw === "" || pRaw == null) && (oRaw === "" || oRaw == null)) {
+    totalEl.value = "";
+  } else {
+    totalEl.value = (Number(pRaw) || 0) + (Number(oRaw) || 0);
+  }
+
   saveToday();
 }
 window.recalcTotals = recalcTotals;
@@ -181,85 +175,49 @@ function showView(view) {
   if (isHuddle) renderHuddle();
 }
 
-// ===== 今日檢視（畫面） =====
-// A) 今日目標：最近一次有資料
-// B) 昨日執行檢視：上一次回報（實績） vs 上上一次（KPI）
+// ===== 今日檢視（Morning Huddle）=====
 function renderHuddle() {
   const today = getCurrentDateStr();
   const { d1, d0 } = getPrevTwoDataDates(today);
 
   const prevData = d1 ? loadByDate(d1) : null;
 
-  // A) 今日目標（以最近一次有資料為準）
   if ($("huddleTodayBooking")) $("huddleTodayBooking").textContent = prevData?.tomorrowBookingTotal ?? "-";
   if ($("huddleTodayTrial")) $("huddleTodayTrial").textContent = prevData?.tomorrowKpiTrial ?? "-";
   if ($("huddleTodayCallTotal")) $("huddleTodayCallTotal").textContent = prevData?.tomorrowKpiCallTotal ?? "-";
   if ($("huddleTodayOld3Y")) $("huddleTodayOld3Y").textContent = prevData?.tomorrowKpiCallOld3Y ?? "-";
 
-  // 今日預約：提示＆（可選）自動帶入
-  const hintBox = $("todayBookingHint");
-  const hintVal = $("todayBookingHintValue");
-  if (hintBox && hintVal && prevData && Number.isFinite(Number(prevData.tomorrowBookingTotal))) {
-    hintVal.textContent = prevData.tomorrowBookingTotal;
-    hintBox.style.display = "block";
-
-    if ($("todayBookingTotal") && String($("todayBookingTotal").value || "").trim() === "") {
-      $("todayBookingTotal").value = prevData.tomorrowBookingTotal;
-      saveToday();
-    }
-  } else if (hintBox) {
-    hintBox.style.display = "none";
-  }
-
-  // B) 昨日執行檢視：d0 KPI（明日KPI） vs d1 實績
   const execData = d1 ? loadByDate(d1) : null;
   const kpiSetData = d0 ? loadByDate(d0) : null;
 
-  if (!execData || !kpiSetData) {
-    if ($("checkTrialText")) $("checkTrialText").textContent = "（資料不足）";
-    if ($("checkCallText")) $("checkCallText").textContent = "（資料不足）";
-    if ($("checkInviteText")) $("checkInviteText").textContent = "（資料不足）";
-    if ($("checkInviteRateText")) $("checkInviteRateText").textContent = "-";
-    const badge = $("checkInviteRateBadge");
-    if (badge) badge.style.display = "none";
-    return;
-  }
+  if (!execData || !kpiSetData) return;
 
-  const targetTrial = n(kpiSetData.tomorrowKpiTrial);
-  const targetCall = n(kpiSetData.tomorrowKpiCallTotal);
-  const targetInvite = n(kpiSetData.tomorrowKpiCallOld3Y);
+  const targetTrial = Number(kpiSetData.tomorrowKpiTrial) || 0;
+  const targetCall = Number(kpiSetData.tomorrowKpiCallTotal) || 0;
+  const targetInvite = Number(kpiSetData.tomorrowKpiCallOld3Y) || 0;
 
-  const actualTrial = n(execData.trialHA) + n(execData.trialAPAP);
-  const actualCall = n(execData.todayCallPotential) + n(execData.todayCallOld3Y);
-  const actualInvite = n(execData.todayInviteReturn);
+  const actualTrial =
+    (Number(execData.trialHA) || 0) +
+    (Number(execData.trialAPAP) || 0);
+  const actualCall =
+    (Number(execData.todayCallPotential) || 0) +
+    (Number(execData.todayCallOld3Y) || 0);
+  const actualInvite = Number(execData.todayInviteReturn) || 0;
 
-  if ($("checkTrialText")) {
+  if ($("checkTrialText"))
     $("checkTrialText").textContent = `目標 ${targetTrial} / 執行 ${actualTrial}  ${okText(actualTrial >= targetTrial)}`;
-  }
-  if ($("checkCallText")) {
+  if ($("checkCallText"))
     $("checkCallText").textContent = `目標 ${targetCall} / 執行 ${actualCall}  ${okText(actualCall >= targetCall)}`;
-  }
-  if ($("checkInviteText")) {
+  if ($("checkInviteText"))
     $("checkInviteText").textContent = `目標 ${targetInvite} / 執行 ${actualInvite}  ${okText(actualInvite >= targetInvite)}`;
-  }
 
-  // ✅ 邀約成功率 = 成功邀約回店人數 / 今日外撥總通數
-  const rate = actualCall > 0 ? (actualInvite / actualCall) : 0;
+  const rate = actualCall > 0 ? actualInvite / actualCall : 0;
   const pct = Math.round(rate * 100) + "%";
-  if ($("checkInviteRateText")) $("checkInviteRateText").textContent = pct;
 
-  const badge = $("checkInviteRateBadge");
-  if (badge) {
-    badge.style.display = "inline-block";
-    badge.classList.remove("green", "yellow", "red");
-    if (rate >= 0.30) { badge.classList.add("green"); badge.textContent = "高"; }
-    else if (rate >= 0.15) { badge.classList.add("yellow"); badge.textContent = "中"; }
-    else { badge.classList.add("red"); badge.textContent = "低"; }
-  }
+  if ($("checkInviteRateText")) $("checkInviteRateText").textContent = pct;
 }
 
 // ===== 產生訊息 =====
-// 今日執行檢視 = 今天實績 vs 昨日KPI（昨天填的明日KPI；昨天休假則回退到最近一次有資料）
 function generateMessage() {
   saveToday();
 
@@ -278,45 +236,11 @@ function generateMessage() {
    完成試戴 ${d.tomorrowKpiTrial} 位
    外撥 ${d.tomorrowKpiCallTotal} 通
    舊客預約 ${d.tomorrowKpiCallOld3Y} 位
-
-📊 今日執行檢視（對照昨日 KPI）
-${buildTodayVsYesterdayKpiText(d)}
 `;
 
   if ($("output")) $("output").value = msg;
 }
 window.generateMessage = generateMessage;
-
-function buildTodayVsYesterdayKpiText(todayForm) {
-  const todayStr = todayForm.date;
-
-  const kpiSourceDate = getKpiSourceDateForToday(todayStr);
-  const kpiSourceData = kpiSourceDate ? loadByDate(kpiSourceDate) : null;
-
-  if (!kpiSourceData) {
-    return "•（找不到昨日 KPI：請確認前一個上班日有填寫「明日KPI」）";
-  }
-
-  const targetTrial = n(kpiSourceData.tomorrowKpiTrial);
-  const targetCall = n(kpiSourceData.tomorrowKpiCallTotal);
-  const targetInvite = n(kpiSourceData.tomorrowKpiCallOld3Y);
-
-  const actualTrial = n(todayForm.trialHA) + n(todayForm.trialAPAP);
-  // ✅ 防呆：分母永遠用「潛客+舊客」＝外撥總通數
-  const actualCall = n(todayForm.todayCallPotential) + n(todayForm.todayCallOld3Y);
-  const actualInvite = n(todayForm.todayInviteReturn);
-
-  // ✅ 邀約成功率 = 成功邀約回店人數 / 今日外撥總通數
-  const rate = actualCall > 0 ? (actualInvite / actualCall) : 0;
-  const pct = Math.round(rate * 100) + "%";
-
-  return [
-    `• 試戴數：目標 ${targetTrial} / 執行 ${actualTrial}   ${okText(actualTrial >= targetTrial)}`,
-    `• 外撥通數：目標 ${targetCall} / 執行 ${actualCall}   ${okText(actualCall >= targetCall)}`,
-    `• 邀約回店數：目標 ${targetInvite} / 執行 ${actualInvite}   ${okText(actualInvite >= targetInvite)}`,
-    `• 邀約成功率：${pct}`,
-  ].join("\n");
-}
 
 // ===== 複製 =====
 async function copyMessage() {
